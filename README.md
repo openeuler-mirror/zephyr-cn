@@ -1,37 +1,11 @@
 # zephyr-cn
 
-#### 介绍
-zephyr-cn is a collection of original work of SIG-Zephyr
+[Zephyr Project](https://www.zephyrproject.org)(后简称Zephyr)是于2016年由Intel、Synopsys、NXP等公司发起，现由Linux基金会管理的，面向物联网时代的新一代嵌入式软件平台。Zephyr并不是一个像Linux那样的大型OS平台，而是与Linux形成互补，主要面向在因为Linux过大过重而不适合使用的场合，如微控制器、实时、高可靠等。Zephyr在设计实现过程中充分吸收了Linux的经验，代码风格，开发流程都与Linux有相似之处。
 
-#### 软件架构
-软件架构说明
+Zephyr-cn主要包含SIG-Zephyr本地化相关的工作，具体如下：
 
+* 所搜集的Zephyr相关资料，包括ppt, pdf等等
+* zephyr相关的中文资料，包括使用心得、教程等等
+* zephyr相关demo
 
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+关于Zephyr的相关讨论和交流，可以通过issue的形式进行。
