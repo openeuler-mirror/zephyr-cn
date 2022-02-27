@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>West（Zephyr的meta tool） &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="安装 West" href="install.html" />
+    <link rel="prev" title="使用vscode进行Zephyr应用开发" href="../vscode.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">West（Zephyr的meta tool）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html">安装 West</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html">基本概念</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">开发者参考</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">West（Zephyr的meta tool）</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/west/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div></div></blockquote>
+<section id="west-zephyrmeta-tool">
+<span id="develop-vscode"></span><h1>West（Zephyr的meta tool）<a class="headerlink" href="#west-zephyrmeta-tool" title="此标题的永久链接">¶</a></h1>
+<p>Zephyr 项目包括一个精致小巧，功能强大的命令行工具：West。 <a class="reference external" href="https://github.com/zephyrproject-rtos/west">West</a> 在独立的存储库中开发。</p>
+<p>West 的内置命令提供了一个多存储库管理系统，其功能源于 Google 的 Repo 工具和 Git 子模块的启发。West 也拥有“可插拔”的特性：用户可以编写自己的West拓展命令，为 West 添加额外的功能。而 Zephyr 则利用这个特性为构建，下载，调试等功能提供便利。</p>
+<p>与 git 和 docker 一样，west 的顶级命令使用一些共用选项和要运行的子命令，然后是该子命令的选项和参数：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west<span class="w"> </span><span class="o">[</span>common-opts<span class="o">]</span><span class="w"> </span>&lt;command&gt;<span class="w"> </span><span class="o">[</span>opts<span class="o">]</span><span class="w"> </span>&lt;args&gt;
+</pre></div>
+</div>
+<p>从 West v0.8 之后，也可以像这样运行 West 命令：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>west<span class="w"> </span><span class="o">[</span>common-opts<span class="o">]</span><span class="w"> </span>&lt;command&gt;<span class="w"> </span><span class="o">[</span>opts<span class="o">]</span><span class="w"> </span>&lt;args&gt;
+</pre></div>
+</div>
+<p>以下文档记录了 West 的 v1.0.y 之后版本的相关内容</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">安装 West</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">基本概念</a></li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../vscode.html" class="btn btn-neutral float-left" title="使用vscode进行Zephyr应用开发" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral float-right" title="安装 West" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据传递-堆栈 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="数据传递-FIFO/LIFO" href="fifo_lifo.html" />
+    <link rel="prev" title="数据传递" href="data_passing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workq.html">工作队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system_thread.html">系统线程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="synchronization.html">同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sem.html">同步-信号量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mutex.html">同步-互斥量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">同步-事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">数据传递-堆栈</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">使用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">实现</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="msgq.html">数据传递-消息队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">数据传递-堆栈</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/stack.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-stack">
+<span id="id1"></span><h1>数据传递-堆栈<a class="headerlink" href="#kernel-stack" title="此标题的永久链接">¶</a></h1>
+<section id="id2">
+<h2>使用<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h2>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="此标题的永久链接">¶</a></h3>
+<p><strong>void k_stack_init(struct k_stack stack, stack_data_t buffer, u32_t num_entries);</strong></p>
+<p>作用：初始化一个stack，stack的内存由使用者分配</p>
+<p>stack: 被初始化的stack</p>
+<p>buffer: stack使用的内存</p>
+<p>num_entries：stack的成员数量</p>
+<p><strong>__syscall s32_t k_stack_alloc_init(struct k_stack *stack, u32_tnum_entries);</strong></p>
+<p>作用：初始化一个stack，stack使用的内存从thread pool分配</p>
+<p>stack: 被初始化的stack</p>
+<p>num_entries：stack的成员数量</p>
+<p>返回值: 0表示初始化成功</p>
+<p><strong>int k_stack_cleanup(struct k_stack* stack);</strong></p>
+<p>作用：释放k_stack_alloc_init中为stack分配的内存</p>
+<p>stack: 操作的stack</p>
+<p>返回值: 0表示free成功，如果有pop在等待数据时会返回非0</p>
+<p><strong>__syscall int k_stack_push(struct k_stack *stack, stack_data_t data);</strong></p>
+<p>作用：压栈</p>
+<p>stack：被压栈的stack</p>
+<p>data: 要push的数据</p>
+<p>返回值：push成功返回0</p>
+<p><strong>__syscall int k_stack_pop(struct k_stack *stack, stack_data_t* data, s32_t timeout);</strong></p>
+<p>作用：出栈 stack：被出栈的stack</p>
+<p>data: pop的数据</p>
+<p>timeout: stack没数据时可等待超时，单位ms。K_NO_WAIT不等待, K_FOREVER一直等</p>
+<p>返回值：pop成功返回0</p>
+</section>
+<section id="id3">
+<h3>使用说明<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h3>
+<p>可以在ISR中push stack.也可在ISR内pop stack，但不能等待。 stack满后,push将会失败。 stack的数据成员是指针类型stack_data_t的大小和CPU位数对应</p>
+<section id="id4">
+<h4>初始化<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h4>
+<p>下面两种方式都可以对stack进行初始化 使用函数</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#define MAX_ITEMS 10</span>
+
+<span class="n">stack_data_t</span> <span class="n">my_stack_array</span><span class="p">[</span><span class="n">MAX_ITEMS</span><span class="p">];</span>
+<span class="n">struct</span> <span class="n">k_stack</span> <span class="n">my_stack</span><span class="p">;</span>
+
+<span class="n">k_stack_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_stack</span><span class="p">,</span> <span class="n">my_stack_array</span><span class="p">,</span> <span class="n">MAX_ITEMS</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>使用宏</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">K_STACK_DEFINE</span><span class="p">(</span><span class="n">my_stack</span><span class="p">,</span> <span class="n">MAX_ITEMS</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4>栈操作<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h4>
+<p>堆栈当中存储的只是数据的指针</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>struct my_buffer_type {
+    int field1;
+    ...
+    };
+struct my_buffer_type my_buffers[MAX_ITEMS];
+
+void producer_thread(int unused1, int unused2, int unused3)
+{
+    //将数据指针入栈
+    for (int i = 0; i &lt; MAX_ITEMS; i++) {
+        k_stack_push(&amp;my_stack, (stack_data_t)&amp;my_buffers[i]);
+    }
+}
+
+void consumer_fifo_thread(int unused1, int unused2, int unused3)
+{
+    struct my_buffer_type *new_buffer;
+    //将数据指针出栈，并进行操作
+    k_stack_pop(&amp;buffer_stack, (stack_data_t *)&amp;new_buffer, K_FOREVER);
+    new_buffer-&gt;field1 = ...
+}
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="id6">
+<h2>实现<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h2>
+<section id="id7">
+<h3>数据结构<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h3>
+<p>stack的数据结构如下，wait_q用于pop时无数据等待数据，lock用于多线程访问stack时进行线程保护</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">k_stack</span> <span class="p">{</span>
+    <span class="n">_wait_q_t</span> <span class="n">wait_q</span><span class="p">;</span>
+    <span class="n">struct</span> <span class="n">k_spinlock</span> <span class="n">lock</span><span class="p">;</span>
+    <span class="n">stack_data_t</span> <span class="o">*</span><span class="n">base</span><span class="p">,</span> <span class="o">*</span><span class="nb">next</span><span class="p">,</span> <span class="o">*</span><span class="n">top</span><span class="p">;</span>
+    <span class="n">u8_t</span> <span class="n">flags</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>base是栈底,
+next是栈顶，top是堆栈最大的位置，也就是说next不能超过top.如下图 <img alt="stack" src="../../_images/stack.png" /></p>
+<p>flag只指示该堆栈的内存是否是从线程池中分配的，如果是用k_stack_alloc_init初始化的堆栈，flag就会被设置为下面的值</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#define K_STACK_FLAG_ALLOC  ((u8_t)1)</span>
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h3>初始化<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h3>
+<p>初始化起始就是将stack的各个指针设置正确</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span>    <span class="p">(</span><span class="n">struct</span> <span class="n">k_stack</span> <span class="o">*</span><span class="n">stack</span><span class="p">,</span> <span class="n">stack_data_t</span> <span class="o">*</span><span class="n">buffer</span><span class="p">,</span>
+          <span class="n">u32_t</span> <span class="n">num_entries</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">z_waitq_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stack</span><span class="o">-&gt;</span><span class="n">wait_q</span><span class="p">);</span>   <span class="o">//</span><span class="n">初始化wait_q</span>
+    <span class="n">stack</span><span class="o">-&gt;</span><span class="n">lock</span> <span class="o">=</span> <span class="p">(</span><span class="n">struct</span> <span class="n">k_spinlock</span><span class="p">)</span> <span class="p">{};</span>
+    <span class="n">stack</span><span class="o">-&gt;</span><span class="nb">next</span> <span class="o">=</span> <span class="n">stack</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">;</span> <span class="o">//</span><span class="n">base指向buffer开始</span>
+    <span class="n">stack</span><span class="o">-&gt;</span><span class="n">top</span> <span class="o">=</span> <span class="n">stack</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">+</span> <span class="n">num_entries</span><span class="p">;</span> <span class="o">//</span><span class="n">top执行buffer尾部</span>
+
+    <span class="n">z_object_init</span><span class="p">(</span><span class="n">stack</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="push">
+<h3>push<a class="headerlink" href="#push" title="此标题的永久链接">¶</a></h3>
+<p>k_stack_push-&gt;z_impl_k_stack_push,分析见注释</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_stack_push(struct k_stack *stack, stack_data_t data)
+{
+    struct k_thread *first_pending_thread;
+    k_spinlock_key_t key;
+
+    // stack满了，返回
+    CHECKIF(stack-&gt;next == stack-&gt;top) {
+        return -ENOMEM;
+    }
+
+    key = k_spin_lock(&amp;stack-&gt;lock);
+
+    //查看是否有thread已经在等待stack数据
+    first_pending_thread = z_unpend_first_thread(&amp;stack-&gt;wait_q);
+
+    if (first_pending_thread != NULL) {
+        //如果有thread在等stack数据，将push的数据直接给该thread
+        //stack指针不做修改
+        z_ready_thread(first_pending_thread);
+
+        z_thread_return_value_set_with_data(first_pending_thread,
+                           0, (void *)data);
+        z_reschedule(&amp;stack-&gt;lock, key);
+    } else {
+        //没有thread等stack，将数据放入stack，然后修改next指针
+        *(stack-&gt;next) = data;
+        stack-&gt;next++;
+        k_spin_unlock(&amp;stack-&gt;lock, key);
+    }
+
+    return 0;
+}
+</pre></div>
+</div>
+</section>
+<section id="pop">
+<h3>pop<a class="headerlink" href="#pop" title="此标题的永久链接">¶</a></h3>
+<p>k_stack_pop-&gt;z_impl_k_stack_pop，分析见注释</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_stack_pop(struct k_stack *stack, stack_data_t *data, s32_t timeout)
+{
+    k_spinlock_key_t key;
+    int result;
+
+    key = k_spin_lock(&amp;stack-&gt;lock);
+
+    //检查stack中是否有数据，有就修改next，然后将数据传出
+    if (likely(stack-&gt;next &gt; stack-&gt;base)) {
+        stack-&gt;next--;
+        *data = *(stack-&gt;next);
+        k_spin_unlock(&amp;stack-&gt;lock, key);
+        return 0;
+    }
+
+    //如果pop不等待，又没有数据就直接退出
+    if (timeout == K_NO_WAIT) {
+        k_spin_unlock(&amp;stack-&gt;lock, key);
+        return -EBUSY;
+    }
+
+    //将thread加入wait_q等待stack数据
+    result = z_pend_curr(&amp;stack-&gt;lock, key, &amp;stack-&gt;wait_q, timeout);
+    if (result == -EAGAIN) {
+        //等待超时，则退出
+        return -EAGAIN;
+    }
+
+    //等待到数据就传出数据
+    *data = (stack_data_t)_current-&gt;base.swap_data;
+    return 0;
+}
+</pre></div>
+</div>
+</section>
+<section id="stackthread-pool">
+<h3>Stack从thread pool分配内存<a class="headerlink" href="#stackthread-pool" title="此标题的永久链接">¶</a></h3>
+<p>除了传入stack内存外，stack也可以自己从内存池中分配stack内存
+k_stack_alloc_init-&gt;z_impl_k_stack_alloc_init 分配内存并初始化stack。
+k_stack_cleanup和z_impl_k_stack_alloc_init配对使用，当不使用时使用该api来做k_free。
+分析见代码注释</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>s32_t z_impl_k_stack_alloc_init(struct k_stack *stack, u32_t num_entries)
+{
+    void *buffer;
+    s32_t ret;
+
+    //从线程池中分配内存
+    buffer = z_thread_malloc(num_entries * sizeof(stack_data_t));
+    if (buffer != NULL) {
+        k_stack_init(stack, buffer, num_entries);
+        //设置flags，指示该stack的buffer是从内存池中分配
+        stack-&gt;flags = K_STACK_FLAG_ALLOC;
+        ret = (s32_t)0;
+    } else {
+        ret = -ENOMEM;
+    }
+
+
+int k_stack_cleanup(struct k_stack *stack)
+{
+    //检查wait_q，如果有线程在等待数据不能clean up stack
+    CHECKIF(z_waitq_head(&amp;stack-&gt;wait_q) != NULL) {
+        return -EAGAIN;
+    }
+    //检查有alloc flag，对stack buffer进行释放
+    if ((stack-&gt;flags &amp; K_STACK_FLAG_ALLOC) != (u8_t)0) {
+        k_free(stack-&gt;base);
+        stack-&gt;base = NULL;
+        stack-&gt;flags &amp;= ~K_STACK_FLAG_ALLOC;
+    }
+    return 0;
+}
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id9">
+<h2>参考<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/kernel/data_passing/stacks.html">https://docs.zephyrproject.org/latest/reference/kernel/data_passing/stacks.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="data_passing.html" class="btn btn-neutral float-left" title="数据传递" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fifo_lifo.html" class="btn btn-neutral float-right" title="数据传递-FIFO/LIFO" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

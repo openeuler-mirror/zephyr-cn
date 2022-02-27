@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windows下基于Docker Desktop开发环境的搭建 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/translations.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="搜索" href="../search.html" />
+    <link rel="next" title="使用vscode进行Zephyr应用开发" href="vscode.html" />
+    <link rel="prev" title="Windows下开发环境的搭建" href="windows.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Windows下基于Docker Desktop开发环境的搭建</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">准备阶段</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dokcer-desktop">Dokcer Desktop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#docker-desktop">下载安装Docker Desktop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#docker-dektop">配置Docker Dektop</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#zephyr-build-image">拉取Zephyr-build image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">创建并进入容器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#zephyr">容器中部署Zephyr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">编译及运行</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id9">编译</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">运行</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#docker">Docker相关操作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">参考文档</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">开发者参考</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Windows下基于Docker Desktop开发环境的搭建</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/develop/windows_docker.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="windowsdocker-desktop">
+<span id="develop-windows-docker"></span><h1>Windows下基于Docker Desktop开发环境的搭建<a class="headerlink" href="#windowsdocker-desktop" title="此标题的永久链接">¶</a></h1>
+<p>本章主要介绍一种基于Windows平台，使用Docker Desktop搭建的开发环境，该开发环境搭建更为简单、便捷。为国内开发者提供另一种开发环境搭建方案的选择。
+该方案的思路是在windows平台下安装docker desktop，然后拉取Zephyr Project官方的image，基于该image创建容器，随后进入容器完成开发文件的布局后，
+即可开始正式的编译和开发。其实思路和在windows下创建linux虚拟机进行开发是一样的，只不过使用docker来进行部署会相比虚拟机更加轻便，容易，简单。</p>
+<section id="id1">
+<h2>准备阶段<a class="headerlink" href="#id1" title="此标题的永久链接">¶</a></h2>
+<p>该部分主要准备本方案中所使用到的工具、文件等，便于后续正式部署时使用。</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>下载整个Zephyr projcet文件，该文件是基于Zephyr LTS 2.7.4版本，并按照Zephyr工程文件布局进行打包的。 <a class="reference external" href="https://www.aliyundrive.com/s/f8oysE4vPDJ">下载链接</a></p></li>
+<li><p>下载Zephyr SDK ，该SDK为“zephyr-sdk-0.13.1-linux-x86_64-setup.run”。 <a class="reference external" href="https://www.aliyundrive.com/s/xgDJoiYhPmF">下载链接</a></p></li>
+<li><p>下载windows终端，便于输入命令。 <a class="reference external" href="https://learn.microsoft.com/zh-cn/windows/terminal/install">下载链接</a></p></li>
+<li><p>阅读docker基础知识，重点关注使用和基本命令。 <a class="reference external" href="https://www.runoob.com/docker/docker-tutorial.html">链接</a></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="dokcer-desktop">
+<h2>Dokcer Desktop<a class="headerlink" href="#dokcer-desktop" title="此标题的永久链接">¶</a></h2>
+<section id="docker-desktop">
+<h3>下载安装Docker Desktop<a class="headerlink" href="#docker-desktop" title="此标题的永久链接">¶</a></h3>
+<p>通过链接下载对应系统架构的Docker Desktop V4.18.0. 并进行安装。 <a class="reference external" href="https://docs.docker.com/desktop/release-notes/#4180">下载链接</a></p>
+</section>
+<section id="docker-dektop">
+<h3>配置Docker Dektop<a class="headerlink" href="#docker-dektop" title="此标题的永久链接">¶</a></h3>
+<p>配置Docker Dektop主要有两个操作。</p>
+<ol class="arabic simple">
+<li><p>修改image存储位置。</p></li>
+</ol>
+<p>因为image默认是存放在C盘，避免C盘占用过多，所以将image存储位置进行修改。</p>
+<p>参考链接 <a class="reference external" href="https://blog.csdn.net/u013948858/article/details/111464534">【Docker】win10上修改docker的镜像文件存储位置（九）- 通过WSL2修改</a></p>
+<ol class="arabic simple" start="2">
+<li><p>修改image源。</p></li>
+</ol>
+<p>因为Docker Dektop的默认源部署在海外，访问不稳定，所以对源进行修改，加速访问。</p>
+<p>参考链接 <a class="reference external" href="https://blog.csdn.net/Lyon_Nee/article/details/124169099">Windows Docker 配置国内镜像源的两种方法</a></p>
+<p>以上配置在参考链接中均有检查环境，请自行参考链接进行检查。</p>
+</section>
+</section>
+<section id="zephyr-build-image">
+<h2>拉取Zephyr-build image<a class="headerlink" href="#zephyr-build-image" title="此标题的永久链接">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">备注</p>
+<p>Desktop Hub类似于github，是Desktop官方专门给用户存放公共imgae的地方。其操作逻辑和在github拉取代码、推送代码是一样的。</p>
+</div>
+<ol class="arabic simple">
+<li><p>在Windows终端输入以下命令，从Desktop Hub拉取拉取zephyr-build image</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>zephyrprojectrtos/zephyr-build:latest
+</pre></div>
+</div>
+<p>下载完成后的页面如下图所示。</p>
+<img alt="../_images/docker_pull_image.png" src="../_images/docker_pull_image.png" />
+<ol class="arabic simple" start="2">
+<li><p>使用命令查看已经下载好的image，可以看到有一个zephyrprojectrtos/zephyr-build的image</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>PS<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\p</span>anji&gt;<span class="w"> </span>docker<span class="w"> </span>images
+REPOSITORY<span class="w">                       </span>TAG<span class="w">       </span>IMAGE<span class="w"> </span>ID<span class="w">       </span>CREATED<span class="w">        </span>SIZE
+zephyrprojectrtos/zephyr-build<span class="w">   </span>latest<span class="w">    </span>de8729afe80c<span class="w">   </span><span class="m">3</span><span class="w"> </span>weeks<span class="w"> </span>ago<span class="w">    </span><span class="m">12</span>.1GB
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h2>创建并进入容器<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h2>
+<p>创建并启动容器，并将本地的目录D:/Workspace/SIG_Zephyr挂在到容器的/workdir中。</p>
+<div class="admonition note">
+<p class="admonition-title">备注</p>
+<p>此处进行文件夹的挂载主要是为了方便在windows下直接访问容器类的文件夹，类似与linux服务和windows使用samba进行文件文件传输。
+参考链接 <a class="reference external" href="https://blog.csdn.net/weixin_39400835/article/details/101905090">docker挂载Win10本地目录</a></p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>PS<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\p</span>anji&gt;<span class="w"> </span>docker<span class="w"> </span>images
+docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--name<span class="w"> </span>SIG_Zephyr<span class="w"> </span>-v<span class="w"> </span>/d/Workspace/SIG_Zephyr:/workdir<span class="w"> </span>zephyrprojectrtos/zephyr-build:latest
+</pre></div>
+</div>
+<p>命令运行后如下图所示。</p>
+<img alt="../_images/docker_run_and_mount_volume.png" src="../_images/docker_run_and_mount_volume.png" />
+</section>
+<section id="zephyr">
+<h2>容器中部署Zephyr<a class="headerlink" href="#zephyr" title="此标题的永久链接">¶</a></h2>
+<ol class="arabic simple">
+<li><p>将sig_zephyr_v2.7.4.tar.gz和zephyr-sdk-0.13.1-linux-x86_64-setup.run放在D:/Workspace/SIG_Zephyr文件中，此时可以在容器中对应挂载的文件也能看到该文件.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>user@18861c4f54ed:/workdir$<span class="w"> </span>ls
+sig_zephyr_v2.7.4.tat.gz<span class="w">  </span>zephyr-sdk-0.13.1-linux-x86_64-setup.run
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>解压sig_zephyr_v2.7.4.tar.gz到/wordir文件夹</p></li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">警告</p>
+<p>因为分享链接下载的exe文件，双击就能够解压出sig_zephyr_v2.7.4.tar.gz文件。</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>user@18861c4f54ed:/workdir$<span class="w"> </span>tar<span class="w"> </span>-xvzf<span class="w"> </span>sig_zephyr_v2.7.4.tar.gz
+user@18861c4f54ed:/workdir$<span class="w"> </span>ls<span class="w"> </span>-a
+.<span class="w">  </span>..<span class="w">  </span>bootloader<span class="w">  </span>modules<span class="w">  </span>sig_zephyr_v2.7.4.tar.gz<span class="w">  </span>tools<span class="w">  </span>.west<span class="w">  </span>zephyr<span class="w">  </span>zephyr-sdk-0.13.1-linux-x86_64-setup.run
+</pre></div>
+</div>
+<p>使用ls -a可以看到在workdir文件夹中多了几个个文件夹.west、bootloader、modules、tools、zephyr，这5个文件夹即是整个zephyr 的项目文件夹。</p>
+<ol class="arabic simple" start="3">
+<li><p>在workdir文件夹中运行west update。</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west<span class="w"> </span>update
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">备注</p>
+<p>此步骤可以省略，不过可以用来检验整个zephyr 项目文件夹是否建立正常。</p>
+</div>
+<p>命令运行后如下图所示。</p>
+<img alt="../_images/docker_west_update.png" src="../_images/docker_west_update.png" />
+<ol class="arabic simple" start="4">
+<li><p>安装SDK</p></li>
+</ol>
+<blockquote>
+<div><p>此步骤完全参考zephyr官方文档进行操作。详情查看 <a class="reference external" href="https://docs.zephyrproject.org/2.7.5/getting_started/index.html">Getting Started Guide</a> 中的Install a Toolchain章节，可以跳过Download the latest SDK installer步骤。</p>
+</div></blockquote>
+</section>
+<section id="id8">
+<h2>编译及运行<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h2>
+<p>上述所有准备工作完成之后，可以尝试构建Zephyr应用了。</p>
+<section id="id9">
+<h3>编译<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h3>
+<p>先进入到zephyr目录下，再进行编译。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>user@18861c4f54ed:/workdir/zephyr$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zephyr
+user@18861c4f54ed:/workdir/zephyr$<span class="w"> </span>west<span class="w"> </span>build<span class="w"> </span>-p<span class="w"> </span>auto<span class="w"> </span>-b<span class="w"> </span>qemu_cortex_m3<span class="w"> </span>samples/philosophers
+</pre></div>
+</div>
+<p>编译如下图所示：</p>
+<img alt="../_images/dokcker_west_build_example.png" src="../_images/dokcker_west_build_example.png" />
+</section>
+<section id="id10">
+<h3>运行<a class="headerlink" href="#id10" title="此标题的永久链接">¶</a></h3>
+<p>使用命令对上述编译进行仿真运行。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>user@18861c4f54ed:/workdir/zephyr$<span class="w"> </span>west<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>run
+</pre></div>
+</div>
+<p>运行结果如下图所示。</p>
+<img alt="../_images/dokcker_west_run_example.png" src="../_images/dokcker_west_run_example.png" />
+<p>运行后可以看到终端有字符一直再变动，其实这是qemu在对例程进行运行，ctrl+c可以中止例程运行。</p>
+</section>
+</section>
+<section id="docker">
+<h2>Docker相关操作<a class="headerlink" href="#docker" title="此标题的永久链接">¶</a></h2>
+<ol class="arabic">
+<li><p>如何退出Docker容器？</p>
+<p>容器中输入exit即可退出容器；</p>
+</li>
+<li><p>容器停止运行后如何启动和进入？</p>
+<p>启动容器命令：docker start 容器名
+进入容器命令：docker attach 容器名</p>
+</li>
+<li><p>vscode如何访问Docker容器？</p>
+<p>安装Docker插件，找到对应的容器访问即可。</p>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">备注</p>
+<p>若对Docker相关操作不熟悉，请先花时间阅读准备阶段的Docker学习链接，熟悉相关操作。</p>
+</div>
+</section>
+<section id="id11">
+<h2>参考文档<a class="headerlink" href="#id11" title="此标题的永久链接">¶</a></h2>
+<p>以下文档均在本文相关操作中提供过帮助。</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="http://www.sunyouqun.com/2020/04/west-cmd-init-update/">west命令详解：init&amp;update</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/weixin_39400835/article/details/101905090">docker挂载Win10本地目录</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/Lyon_Nee/article/details/124169099">Windows Docker 配置国内镜像源的两种方法</a></p></li>
+<li><p><a class="reference external" href="https://blog.csdn.net/u013948858/article/details/111464534">【Docker】win10上修改docker的镜像文件存储位置（九）- 通过WSL2修改</a></p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="windows.html" class="btn btn-neutral float-left" title="Windows下开发环境的搭建" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vscode.html" class="btn btn-neutral float-right" title="使用vscode进行Zephyr应用开发" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>格式化输出-用户API和后端 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="CBPRINTF" href="formated_output_cbprintf.html" />
+    <link rel="prev" title="OS服务" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">OS服务</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">格式化输出-用户API和后端</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prink">prink</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#printf">*printf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#shell-print">shell_print</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log">LOG_*</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="formated_output_cbprintf.html">CBPRINTF</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel/index.html">内核</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">OS服务</a></li>
+      <li class="breadcrumb-item active">格式化输出-用户API和后端</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/osserivces/formated_output_userapi_backend.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<span id="osservices-formated-output-userapi-backend"></span><h1>格式化输出-用户API和后端<a class="headerlink" href="#api" title="此标题的永久链接">¶</a></h1>
+<p>在Zephyr中提供以下API提供格式化输出</p>
+<ul class="simple">
+<li><p>printk: 内核调试信息打印</p></li>
+<li><p>*printf：printf/fprintf/vfprintf/vprintf等标准C输出</p></li>
+<li><p>shell_print: Shell系统打印</p></li>
+<li><p>LOG_*: LOG_INF/LOG_DBG/LOG_ERR/LOG_WAR,LOG系统打印</p></li>
+</ul>
+<p>以下分别说明其格式化处理函数及用什么后端输出，也可以直接跳到最后看总结。</p>
+<section id="prink">
+<h2>prink<a class="headerlink" href="#prink" title="此标题的永久链接">¶</a></h2>
+<p>函数 <code class="docutils literal notranslate"><span class="pre">printk</span></code> 通常用于格式化输出内核调试信息的打印，为了方便我们通常也会在自己写的应用中调用该API进行打印输出。</p>
+<section id="id1">
+<h3>格式化处理函数<a class="headerlink" href="#id1" title="此标题的永久链接">¶</a></h3>
+<p>函数 <code class="docutils literal notranslate"><span class="pre">printk</span></code> 源代码在 <code class="docutils literal notranslate"><span class="pre">lib/os/printk.c</span></code> 中通过调用 <code class="docutils literal notranslate"><span class="pre">vprintk</span></code> 完成</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">vprintk</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="kt">va_list</span><span class="w"> </span><span class="n">ap</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">out_context</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">cbvprintf</span><span class="p">(</span><span class="n">char_out</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="n">ap</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">vprintk</span></code> 使用 <code class="docutils literal notranslate"><span class="pre">cbvprintf</span></code> 完成字符串格式化，并同时使用 <code class="docutils literal notranslate"><span class="pre">char_out</span></code> 一个一个字符输出</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">char_out</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ctx_p</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">out_context</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx_p</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">++</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">_char_out</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>后端<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">char_out</span></code> 由 <code class="docutils literal notranslate"><span class="pre">__printk_hook_install</span></code> 注册的 <code class="docutils literal notranslate"><span class="pre">_char_out</span></code> 进行字符输出</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">__printk_hook_install</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="kt">int</span><span class="p">))</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="n">_char_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fn</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">__printk_hook_install</span></code> 会在zephyr console初始化的时候调用，设置入console的输出，根据平台硬件的不同zephyr的console支持UART，RAM, RTT, IPM等等。一般情况下我们默认会使用UART，也就是printk输出到串口。
+console的代码在 <code class="docutils literal notranslate"><span class="pre">driver/console/</span></code> 下，串口的文件是 <code class="docutils literal notranslate"><span class="pre">uart_console.c</span></code> 在其初始化函数 <code class="docutils literal notranslate"><span class="pre">uart_console_init</span></code> 中调用 <code class="docutils literal notranslate"><span class="pre">uart_console_hook_install</span></code> 进行printk hook注册</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">uart_console_hook_install</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="cp">#if defined(CONFIG_STDOUT_CONSOLE)</span>
+<span class="w">        </span><span class="n">__stdout_hook_install</span><span class="p">(</span><span class="n">console_out</span><span class="p">);</span>
+<span class="cp">#endif</span>
+<span class="cp">#if defined(CONFIG_PRINTK)</span>
+<span class="w">        </span><span class="n">__printk_hook_install</span><span class="p">(</span><span class="n">console_out</span><span class="p">);</span>
+<span class="cp">#endif</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="printf">
+<h2>*printf<a class="headerlink" href="#printf" title="此标题的永久链接">¶</a></h2>
+<p>Zephyr在 <code class="docutils literal notranslate"><span class="pre">lib/libc/minimal/source/stdout</span></code> 下实现了 <code class="docutils literal notranslate"><span class="pre">printf/fprintf/vfprintf/vprintf</span></code> 等标准C输出, 以在 <code class="docutils literal notranslate"><span class="pre">fprint.c</span></code> 中的 <code class="docutils literal notranslate"><span class="pre">printf</span></code> 进行说明</p>
+<section id="id3">
+<h3>格式化处理函数<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">printf</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">ZRESTRICT</span><span class="w"> </span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="kt">va_list</span><span class="w"> </span><span class="n">vargs</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w">     </span><span class="n">r</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">va_start</span><span class="p">(</span><span class="n">vargs</span><span class="p">,</span><span class="w"> </span><span class="n">format</span><span class="p">);</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbvprintf</span><span class="p">(</span><span class="n">fputc</span><span class="p">,</span><span class="w"> </span><span class="n">DESC</span><span class="p">(</span><span class="n">stdout</span><span class="p">),</span><span class="w"> </span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">vargs</span><span class="p">);</span>
+<span class="w">        </span><span class="n">va_end</span><span class="p">(</span><span class="n">vargs</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">printf</span></code> 使用 <code class="docutils literal notranslate"><span class="pre">cbvprintf</span></code> 完成字符串格式化，并同时使用 <code class="docutils literal notranslate"><span class="pre">fputc</span></code> 一个一个字符输出, 在 <code class="docutils literal notranslate"><span class="pre">stdout_console.c</span></code> 中</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">fputc</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">stream</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">zephyr_fputc</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">stream</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>注意，当Zephyr使用第三方libc时，例如newlib，库中的标准格式化输出函数将使用第三方库中格式化处理而不是使用 cbvprintf。</strong></p>
+</section>
+<section id="id4">
+<h3>后端<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">zephyr_fputc</span></code> 实现为在 <code class="docutils literal notranslate"><span class="pre">z_impl_zephyr_fputc</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">z_impl_zephyr_fputc</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">stream</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">stdout</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">stderr</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">_stdout_hook</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">EOF</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>其hook函数由``__stdout_hook_install注册</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">__stdout_hook_install</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">hook</span><span class="p">)(</span><span class="kt">int</span><span class="p">))</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="n">_stdout_hook</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hook</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>和 <code class="docutils literal notranslate"><span class="pre">printk</span></code> 一样其hook函数会在console driver中调用 <code class="docutils literal notranslate"><span class="pre">__stdout_hook_install</span></code> 进行注册(前面代码 <code class="docutils literal notranslate"><span class="pre">uart_console_hook_install</span></code> 可以看到)</p>
+</section>
+</section>
+<section id="shell-print">
+<h2>shell_print<a class="headerlink" href="#shell-print" title="此标题的永久链接">¶</a></h2>
+<p>shell系统要控制自己的输入输出，当同为一个后端时，例如都在串口上，为了不被 <code class="docutils literal notranslate"><span class="pre">printk</span></code> 和 <code class="docutils literal notranslate"><span class="pre">printf</span></code> 干扰，建议使用 <code class="docutils literal notranslate"><span class="pre">shell_print</span></code> 进行打印。
+<code class="docutils literal notranslate"><span class="pre">shell_print</span></code> 是一个 <code class="docutils literal notranslate"><span class="pre">include\shell\shell.h</span></code> 中的宏，实际使用的是 <code class="docutils literal notranslate"><span class="pre">subsys\shell\shell.c</span></code> 中的 <code class="docutils literal notranslate"><span class="pre">shell_fprintf</span></code> 为简化说明，列出调用关系:
+<code class="docutils literal notranslate"><span class="pre">shell_print-&gt;shell_fprintf-&gt;shell_vfprintf-&gt;z_shell_vfprintf-&gt;z_shell_fprintf_fmt</span></code> 。</p>
+<section id="id5">
+<h3>格式化处理函数<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h3>
+<p>在 <code class="docutils literal notranslate"><span class="pre">shell_fprintf.c</span></code> 中实现的 <code class="docutils literal notranslate"><span class="pre">z_shell_fprintf_fmt</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">z_shell_fprintf_fmt</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_fprintf</span><span class="w"> </span><span class="o">*</span><span class="n">sh_fprintf</span><span class="p">,</span>
+<span class="w">                 </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="kt">va_list</span><span class="w"> </span><span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">cbvprintf</span><span class="p">(</span><span class="n">out_func</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">sh_fprintf</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">autoflush</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">z_shell_fprintf_buffer_flush</span><span class="p">(</span><span class="n">sh_fprintf</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">z_shell_fprintf_fmt</span></code> 使用 <code class="docutils literal notranslate"><span class="pre">cbvprintf</span></code> 完成字符串格式化，并同时使用 <code class="docutils literal notranslate"><span class="pre">out_func</span></code> 一个一个字符输出。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">out_func</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_fprintf</span><span class="w"> </span><span class="o">*</span><span class="n">sh_fprintf</span><span class="p">;</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="n">shell</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">sh_fprintf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_fprintf</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">ctx</span><span class="p">;</span>
+<span class="w">        </span><span class="n">shell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">user_ctx</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">shell</span><span class="o">-&gt;</span><span class="n">shell_flag</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHELL_FLAG_OLF_CRLF</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\n&#39;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">out_func</span><span class="p">(</span><span class="sc">&#39;\r&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="c1">//装入buffer</span>
+<span class="w">        </span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">[</span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">buffer_cnt</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint8_t</span><span class="p">)</span><span class="n">c</span><span class="p">;</span>
+<span class="w">        </span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">buffer_cnt</span><span class="o">++</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">//装满后才进行真正的flush写到后端</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">buffer_cnt</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">buffer_size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">z_shell_fprintf_buffer_flush</span><span class="p">(</span><span class="n">sh_fprintf</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">z_shell_fprintf_buffer_flush</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_fprintf</span><span class="w"> </span><span class="o">*</span><span class="n">sh_fprintf</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="c1">//写到后端</span>
+<span class="w">        </span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">fwrite</span><span class="p">(</span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">user_ctx</span><span class="p">,</span><span class="w"> </span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">buffer_cnt</span><span class="p">);</span>
+<span class="w">        </span><span class="n">sh_fprintf</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">buffer_cnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sh_fprintf-&gt;fwrite</span></code> 是 <code class="docutils literal notranslate"><span class="pre">SHELL_DEFINE-&gt;Z_SHELL_FPRINTF_DEFINE</span></code> 注册函数 <code class="docutils literal notranslate"><span class="pre">z_shell_print_stream</span></code> 最后会调用到 <code class="docutils literal notranslate"><span class="pre">z_shell_write</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">z_shell_write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="n">shell</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span>
+<span class="w">                </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">shell</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">tmp_cnt</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">shell</span><span class="o">-&gt;</span><span class="n">iface</span><span class="o">-&gt;</span><span class="n">api</span><span class="o">-&gt;</span><span class="n">write</span><span class="p">(</span><span class="n">shell</span><span class="o">-&gt;</span><span class="n">iface</span><span class="p">,</span>
+<span class="w">                                </span><span class="o">&amp;</span><span class="p">((</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">data</span><span class="p">)[</span><span class="n">offset</span><span class="p">],</span><span class="w"> </span><span class="n">length</span><span class="p">,</span>
+<span class="w">                                </span><span class="o">&amp;</span><span class="n">tmp_cnt</span><span class="p">);</span>
+<span class="w">                </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">err</span><span class="p">;</span>
+<span class="w">                </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">                </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">tmp_cnt</span><span class="p">);</span>
+<span class="w">                </span><span class="n">offset</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">tmp_cnt</span><span class="p">;</span>
+<span class="w">                </span><span class="n">length</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">tmp_cnt</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tmp_cnt</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">                        </span><span class="p">(</span><span class="n">shell</span><span class="o">-&gt;</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">state</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SHELL_STATE_PANIC_MODE_ACTIVE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">shell_pend_on_txdone</span><span class="p">(</span><span class="n">shell</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>这里的 <code class="docutils literal notranslate"><span class="pre">shell-&gt;iface-&gt;api-&gt;write</span></code> 就是shell的后端write</p>
+</section>
+<section id="id6">
+<h3>后端<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h3>
+<p>shell的后端的所有实现都放在 <code class="docutils literal notranslate"><span class="pre">subsys/shell/backends</span></code> 下，支持uart, rtt, telnet, dummy，当选择串口作为后端时 <code class="docutils literal notranslate"><span class="pre">shell_print</span></code> 将输出到串口，串口后端实现的代码是shell_uart.c</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_transport_api</span><span class="w"> </span><span class="n">shell_uart_transport_api</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">init</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">init</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">uninit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">uninit</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">enable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">enable</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">write</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">write</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">read</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">,</span>
+<span class="cp">#ifdef CONFIG_MCUMGR_SMP_SHELL</span>
+<span class="w">        </span><span class="p">.</span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">update</span><span class="p">,</span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_MCUMGR_SMP_SHELL */</span>
+<span class="p">};</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_transport</span><span class="w"> </span><span class="o">*</span><span class="n">transport</span><span class="p">,</span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">cnt</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_uart</span><span class="w"> </span><span class="o">*</span><span class="n">sh_uart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_uart</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">transport</span><span class="o">-&gt;</span><span class="n">ctx</span><span class="p">;</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">data8</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">data</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">//使用串口直接输出</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">uart_poll_out</span><span class="p">(</span><span class="n">sh_uart</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="n">data8</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="o">*</span><span class="n">cnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">length</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">sh_uart</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">handler</span><span class="p">(</span><span class="n">SHELL_TRANSPORT_EVT_TX_RDY</span><span class="p">,</span>
+<span class="w">                                        </span><span class="n">sh_uart</span><span class="o">-&gt;</span><span class="n">ctrl_blk</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">);</span>
+
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="log">
+<h2>LOG_*<a class="headerlink" href="#log" title="此标题的永久链接">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">LOG_INF/LOG_DBG/LOG_ERR/LOG_WAR</span></code> 是LOG系统打印，Zephyr提供这些格式化打印接口方便过滤和控制打印。
+其调用关系可简化为：
+<code class="docutils literal notranslate"><span class="pre">LOG_\*-&gt;Z_LOG-&gt;Z_LOG2-Z_LOG_MSG2_CREATE-&gt;Z_LOG_MSG2_CREATE2</span></code>
+<code class="docutils literal notranslate"><span class="pre">Z_LOG_MSG2_CREATE2`终于会根据配置的不同调用`z_log_msg2_runtime_create</span></code> 或 <code class="docutils literal notranslate"><span class="pre">Z_LOG_MSG2_SIMPLE_CREATE</span></code> 或 <code class="docutils literal notranslate"><span class="pre">Z_LOG_MSG2_STACK_CREATE</span></code></p>
+<section id="id7">
+<h3>格式化处理函数<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h3>
+<p><em>动态生成</em></p>
+<p><code class="docutils literal notranslate"><span class="pre">z_log_msg2_runtime_create-&gt;z_log_msg2_runtime_vcreate-&gt;z_impl_z_log_msg2_runtime_vcreate</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">z_impl_z_log_msg2_runtime_vcreate</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">domain_id</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">source</span><span class="p">,</span>
+<span class="w">                                </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">level</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dlen</span><span class="p">,</span>
+<span class="w">                                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="kt">va_list</span><span class="w"> </span><span class="n">ap</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">plen</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">va_list</span><span class="w"> </span><span class="n">ap2</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">va_copy</span><span class="p">(</span><span class="n">ap2</span><span class="p">,</span><span class="w"> </span><span class="n">ap</span><span class="p">);</span>
+<span class="w">                </span><span class="n">plen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbvprintf_package</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">Z_LOG_MSG2_ALIGN_OFFSET</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">                                        </span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="n">ap2</span><span class="p">);</span>
+<span class="w">                </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">plen</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">                </span><span class="n">va_end</span><span class="p">(</span><span class="n">ap2</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">plen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">msg_wlen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Z_LOG_MSG2_ALIGNED_WLEN</span><span class="p">(</span><span class="n">plen</span><span class="p">,</span><span class="w"> </span><span class="n">dlen</span><span class="p">);</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">log_msg2</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">;</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">log_msg2_desc</span><span class="w"> </span><span class="n">desc</span><span class="w"> </span><span class="o">=</span>
+<span class="w">                </span><span class="n">Z_LOG_MSG_DESC_INITIALIZER</span><span class="p">(</span><span class="n">domain_id</span><span class="p">,</span><span class="w"> </span><span class="n">level</span><span class="p">,</span><span class="w"> </span><span class="n">plen</span><span class="p">,</span><span class="w"> </span><span class="n">dlen</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">IS_ENABLED</span><span class="p">(</span><span class="n">CONFIG_LOG2_MODE_IMMEDIATE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alloca</span><span class="p">(</span><span class="n">msg_wlen</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">z_log_msg2_alloc</span><span class="p">(</span><span class="n">msg_wlen</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">msg</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">plen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbvprintf_package</span><span class="p">(</span><span class="n">msg</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span><span class="n">plen</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">fmt</span><span class="p">,</span><span class="w"> </span><span class="n">ap</span><span class="p">);</span>
+<span class="w">                </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">plen</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">z_log_msg2_finalize</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">desc</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>使用 <code class="docutils literal notranslate"><span class="pre">cbvprintf_package</span></code> 打包格式化，使用 <code class="docutils literal notranslate"><span class="pre">z_log_msg2_finalize</span></code> 对打包后的数据进行输出</p>
+<p><em>静态生成</em></p>
+<p><code class="docutils literal notranslate"><span class="pre">Z_LOG_MSG2_SIMPLE_CREATE</span></code> 先使用 <code class="docutils literal notranslate"><span class="pre">CBPRINTF_STATIC_PACKAGE</span></code> 打包格式化，再使用 <code class="docutils literal notranslate"><span class="pre">z_log_msg2_finalize</span></code> 对打包后的数据进行输出
+<code class="docutils literal notranslate"><span class="pre">Z_LOG_MSG2_STACK_CREATE``先使用</span> <span class="pre">``CBPRINTF_STATIC_PACKAGE</span></code> 打包格式化，再通过 <code class="docutils literal notranslate"><span class="pre">z_log_msg2_static_create-&gt;z_impl_z_log_msg2_static_create-&gt;z_log_msg2_finalize</span></code> 对打包后的数据进行输出</p>
+</section>
+<section id="id8">
+<h3>后端<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">z_log_msg2_finalize</span></code> 只是将 <code class="docutils literal notranslate"><span class="pre">cbvprintf_package</span></code> 或 <code class="docutils literal notranslate"><span class="pre">CBPRINTF_STATIC_PACKAGE</span></code> 打包后的数据送到log core， log core会将包送给后端进行显示。
+log的backend实现文件放到 <code class="docutils literal notranslate"><span class="pre">subsys\logging\</span></code> 中以名字为 <code class="docutils literal notranslate"><span class="pre">log_backend_\*.c</span></code> , log系统的backend可以根据硬件平台的不同选择uart, rtt, swo, fs, net等等。其中uart实现在 <code class="docutils literal notranslate"><span class="pre">log_backend_uart.c</span></code>
+显示的执行流程是 <code class="docutils literal notranslate"><span class="pre">process-&gt;log_output_msg2_process</span></code> 简化如下</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">log_output_msg2_process</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">log_output</span><span class="w"> </span><span class="o">*</span><span class="n">output</span><span class="p">,</span>
+<span class="w">                                </span><span class="k">struct</span><span class="w"> </span><span class="nc">log_msg2</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="c1">//读取包数据</span>
+<span class="w">        </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log_msg2_get_package</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">len</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">len</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbpprintf</span><span class="p">(</span><span class="n">raw_string</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">cr_out_func</span><span class="w"> </span><span class="o">:</span><span class="w">  </span><span class="n">out_func</span><span class="p">,</span>
+<span class="w">                                        </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+
+<span class="w">                </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">err</span><span class="p">;</span>
+<span class="w">                </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//使用cbpprintf解析包数据，并使用out_func输出</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">len</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbpprintf</span><span class="p">(</span><span class="n">raw_string</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">cr_out_func</span><span class="w"> </span><span class="o">:</span><span class="w">  </span><span class="n">out_func</span><span class="p">,</span>
+<span class="w">                                        </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+
+<span class="w">                </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">err</span><span class="p">;</span>
+<span class="w">                </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">out_func</span></code> 实现在log_output.c中，收到字符会先放到buffer，达到一定量后调用 <code class="docutils literal notranslate"><span class="pre">log_output_flush-&gt;buffer_write-&gt;(output-&gt;func)</span></code> 进行输出
+output使用的是 <code class="docutils literal notranslate"><span class="pre">LOG_OUTPUT_DEFINE(log_output_uart,</span> <span class="pre">char_out,</span> <span class="pre">uart_output_buf,</span> <span class="pre">sizeof(uart_output_buf))</span></code> uart的 <code class="docutils literal notranslate"><span class="pre">char_out</span></code> 实现如下</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">char_out</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">        </span><span class="n">ARG_UNUSED</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">err</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">IS_ENABLED</span><span class="p">(</span><span class="n">CONFIG_LOG_BACKEND_UART_OUTPUT_DICTIONARY_HEX</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">dict_char_out_hex</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">);</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">length</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">IS_ENABLED</span><span class="p">(</span><span class="n">CONFIG_LOG_BACKEND_UART_ASYNC</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">in_panic</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">use_async</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">uart_poll_out</span><span class="p">(</span><span class="n">uart_dev</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">length</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">uart_tx</span><span class="p">(</span><span class="n">uart_dev</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="n">SYS_FOREVER_US</span><span class="p">);</span>
+<span class="w">        </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_sem_take</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sem</span><span class="p">,</span><span class="w"> </span><span class="n">K_FOREVER</span><span class="p">);</span>
+<span class="w">        </span><span class="n">__ASSERT_NO_MSG</span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">err</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">length</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>可以看到是使用的串口驱动直接输出。</p>
+</section>
+</section>
+<section id="id9">
+<h2>总结<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h2>
+<p>printk: 使用cbvprintf完成字符串格式化，输出由console决定
+*printf: 当使用zephyr自己的minilibc时，使用cbvprintf完成字符串格式化，输出由console决定
+shell_print: 使用 <code class="docutils literal notranslate"><span class="pre">cbvprintf</span></code> 完成字符串格式化，输出由shell自己配置的后端决定
+LOG_*：使用 <code class="docutils literal notranslate"><span class="pre">cbvprintf_package</span></code> 或 <code class="docutils literal notranslate"><span class="pre">CBPRINTF_STATIC_PACKAGE</span></code> 打包格式化字符串，由 <code class="docutils literal notranslate"><span class="pre">cbpprintf</span></code> 根据包数据完成字符串格化，输出由log自己配置的后端决定</p>
+<p>当console和shell后端还有log后端都选择为串口时，由于大家最后都是通过串口驱动输出，以上4类格式化API同时在多线程或中断中存在时会相互干扰，使用时需要留意。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="OS服务" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="formated_output_cbprintf.html" class="btn btn-neutral float-right" title="CBPRINTF" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

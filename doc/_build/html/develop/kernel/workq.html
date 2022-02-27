@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>工作队列 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="系统线程" href="system_thread.html" />
+    <link rel="prev" title="内核" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">工作队列</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">工作项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">用户定义工作队列</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">系统工作队列</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">对工作项的操作</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">延迟工作项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">用户空间工作队列</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id14">其它</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id15">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="system_thread.html">系统线程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="synchronization.html">同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sem.html">同步-信号量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mutex.html">同步-互斥量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">同步-事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">数据传递-堆栈</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="msgq.html">数据传递-消息队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">工作队列</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/workq.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-workq">
+<span id="id1"></span><h1>工作队列<a class="headerlink" href="#kernel-workq" title="此标题的永久链接">¶</a></h1>
+<p>工作队列由一个专用线程和列队组成，专用线程以先进先出的方式处理发送到列队中的工作项。工作队列的线程通常被指定为低优先级线程，中断服务程序或者高优先级线程将非紧急事务转移到工作队列的专用线程中处理，以此降低对时间敏感事物的影响。在Zephyr中工作队列被作为内核对象提供出来，而其它大多数RTOS需要使用者自己使用线程和消息队列来实现工作队列。</p>
+<p><img alt="image0" src="../../_images/workq.png" /></p>
+<p>只要内存足够在Zephyr可以创建任意数量的工作队列，一个工作队列就会有一个工作线程，工作线程的优先级可以配置为协助或者抢占。当列队中无工作项时工作线程处于睡眠状态。当使用者向工作队列发送工作项时，工作项被加入到列队同时通知工作线程处理，工作线程从列队中取出工作项执行，工作线程在执行工作项之间会使用<code class="docutils literal notranslate"><span class="pre">k_yield</span></code>以防止协作类型的工作线程一直占用CPU饿死其它线程。</p>
+<p>一个工作队列的三大要素：</p>
+<ul class="simple">
+<li><p>工作项：中断服务程序或高优先级线程的非紧急事务</p></li>
+<li><p>列队：用于保存还没处理的工作项</p></li>
+<li><p>工作线程：处理工作项中携带的事务</p></li>
+</ul>
+<section id="id2">
+<h2>工作项<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h2>
+<p>工作项带有一个工作处理函数，当工作线程处理该工作项时就调用该工作处理函数。工作项在生命周期内有如下状态：</p>
+<ul class="simple">
+<li><p>悬空：被发送者初始化</p></li>
+<li><p>排队(<strong>queued</strong>)：<code class="docutils literal notranslate"><span class="pre">K_WORK_QUEUED</span></code>
+工作项被发送放到列队中，但还未执行</p></li>
+<li><p>预约(<strong>scheduled</strong>): <code class="docutils literal notranslate"><span class="pre">K_WORK_DELAYED</span></code>
+延迟工作项(后文说明)在等待超时</p></li>
+<li><p>运行(<strong>running</strong>)：<code class="docutils literal notranslate"><span class="pre">K_WORK_RUNNING</span></code> 工作项正在被工作线程处理</p></li>
+<li><p>弃用(<strong>canceling</strong>): <code class="docutils literal notranslate"><span class="pre">K_WORK_CANCELING</span></code> 弃用正在被处理的工作项</p></li>
+</ul>
+<p>工作项可能会同时拥有以上几种状态的组合，例如启用一个正在执行的工作项，这个工作项的状态就是<code class="docutils literal notranslate"><span class="pre">K_WORK_RUNNING</span> <span class="pre">|</span> <span class="pre">K_WORK_CANCELING</span></code></p>
+</section>
+<section id="id3">
+<h2>用户定义工作队列<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h2>
+<p>只要内存足够用户可以定义任意数量的工作队列，创建一个工作队列需要通过初始化和启动两步完成，工作队列的线程是在启动工作队列时才创建</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 工作队列线程的属性 */</span>
+<span class="cp">#define USER_WQ_STACK_SIZE 4096</span>
+<span class="cp">#define USER_WQ_PRIORITY 5</span>
+
+<span class="cm">/* 定义工作队列线程的堆栈 */</span>
+<span class="n">K_THREAD_STACK_DEFINE</span><span class="p">(</span><span class="n">user_wq_stack_area</span><span class="p">,</span><span class="w"> </span><span class="n">USER_WQ_STACK_SIZE</span><span class="p">);</span>
+
+<span class="cm">/* 初始化工作队列 */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">k_work_q</span><span class="w"> </span><span class="n">user_work_q</span><span class="p">;</span>
+<span class="n">k_work_queue_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_work_q</span><span class="p">);</span>
+
+<span class="cm">/* 启动工作队列 */</span>
+<span class="n">k_work_queue_start</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_work_q</span><span class="p">,</span><span class="w"> </span><span class="n">user_wq_stack_area</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">K_THREAD_STACK_SIZEOF</span><span class="p">(</span><span class="n">user_wq_stack_area</span><span class="p">),</span><span class="w"> </span><span class="n">USER_WQ_PRIORITY</span><span class="p">,</span>
+<span class="w">                    </span><span class="nb">NULL</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>发送工作项到指定的工作队列，工作队列线程一旦无其它前置的工作项时将立即处理该工作项。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 初始化工作项，为其指定工作函数user_work_handler */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">k_work</span><span class="w"> </span><span class="n">work</span><span class="p">;</span>
+<span class="n">k_work_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="p">,</span><span class="w"> </span><span class="n">user_work_handler</span><span class="p">);</span>
+
+<span class="cm">/* 将工作项发送到 user_work_q的工作队列处理 */</span>
+<span class="n">k_work_submit_to_queue</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_work_q</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">work</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>对用户定义的工作队列可以进行排空操作</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 排空user_work_q的工作项，第二个参数plug设置未true表示排空后仍然不接受新的工作项提交 */</span>
+<span class="n">k_work_queue_drain</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_work_q</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>排空函数会一直阻塞直到工作队列中所有工作项执行完成后才会返回，在排空执行期间被排空的工作队列只接受自己工作线程提交的工作项，不接受中断服务程序和其它线程提交的工作项。排空结束后工作队列会根据第二个参数<code class="docutils literal notranslate"><span class="pre">plug</span></code>判断是否接受新的工作项，如果<code class="docutils literal notranslate"><span class="pre">false</span></code>表示排空后可以立即接受新的工作项提交，如果为<code class="docutils literal notranslate"><span class="pre">true</span></code>需要做unplug动作做释放动作让工作队列可以继续接受新的工作项</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 释放plug的工作队列，可以继续接受新的提交的工作项 */</span>
+<span class="n">k_work_queue_unplug</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_work_q</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h2>系统工作队列<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h2>
+<p>zephyr在<code class="docutils literal notranslate"><span class="pre">POST_KERNEL</span></code>初始化阶段会创建一个系统工作队列<code class="docutils literal notranslate"><span class="pre">k_sys_work_q</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SYS_INIT</span><span class="p">(</span><span class="n">k_sys_work_q_init</span><span class="p">,</span><span class="w"> </span><span class="n">POST_KERNEL</span><span class="p">,</span><span class="w"> </span><span class="n">CONFIG_KERNEL_INIT_PRIORITY_DEFAULT</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>该工作队列的线程优先级通过<code class="docutils literal notranslate"><span class="pre">CONFIG_SYSTEM_WORKQUEUE_PRIORITY</span></code>配置，默认<code class="docutils literal notranslate"><span class="pre">-1</span></code>，属于不可抢占的协作线程。通过<code class="docutils literal notranslate"><span class="pre">CONFIG_SYSTEM_WORKQUEUE_NO_YIELD</span></code>配置系统工作队列在处理完一个工作项后是否执行<code class="docutils literal notranslate"><span class="pre">k_yield</span></code>，默认为<code class="docutils literal notranslate"><span class="pre">n</span></code>表示需要执行</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">k_sys_work_q_init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ARG_UNUSED</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">k_work_queue_config</span><span class="w"> </span><span class="n">cfg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;sysworkq&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">no_yield</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">IS_ENABLED</span><span class="p">(</span><span class="n">CONFIG_SYSTEM_WORKQUEUE_NO_YIELD</span><span class="p">),</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">k_work_queue_start</span><span class="p">(</span><span class="o">&amp;</span><span class="n">k_sys_work_q</span><span class="p">,</span>
+<span class="w">                </span><span class="n">sys_work_q_stack</span><span class="p">,</span>
+<span class="w">                </span><span class="n">K_KERNEL_STACK_SIZEOF</span><span class="p">(</span><span class="n">sys_work_q_stack</span><span class="p">),</span>
+<span class="w">                </span><span class="n">CONFIG_SYSTEM_WORKQUEUE_PRIORITY</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cfg</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>从上面的实现可以看到，系统工作队列也是使用的<code class="docutils literal notranslate"><span class="pre">k_work_queue_start</span></code>创建，因此其工作原理和用户定义的一致。</p>
+<p>由于新建一个工作队列要创建线程，需要较多内存资源，因此一般建议只使用系统工作队列。只有当工作项会影响到系统工作队列的时才另建立工作队列处理该工作项，例如一个工作项会长时间阻塞影响系统工作队列中后续的工作项，这就需要新建工作队列来单独处理。</p>
+<p>系统工作队列已经在zephyr初始化阶段创建好，因此只用初始化一个工作项进行发送执行即可，系统工作队列线程一旦无其它前置的工作项时将立即处理该工作项</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">k_work</span><span class="w"> </span><span class="n">work</span><span class="p">;</span>
+<span class="n">k_work_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="p">,</span><span class="w"> </span><span class="n">user_work_handler</span><span class="p">);</span>
+<span class="n">k_work_submit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h2>对工作项的操作<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h2>
+<p>无论是提交到系统工作队列还是用户工作队列的工作项都可以使用下列API进行操作</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">k_work_sync</span><span class="w"> </span><span class="n">sync</span><span class="p">;</span>
+
+<span class="cm">/* 等待work执行完成后才返回 */</span>
+<span class="n">k_work_flush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sync</span><span class="p">);</span>
+
+<span class="cm">/* 异步取消work立即返回，列队等待的work将被移除，已经再执行的work依然执行完 */</span>
+<span class="n">k_work_cancel</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="p">);</span>
+
+<span class="cm">/* 同步取消work，列队等待的work将被移除，已经再执行的work依然执行完,等到执行完后才会返回 */</span>
+<span class="n">k_work_cancel</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sync</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h2>延迟工作项<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h2>
+<p>当中断服务程序或高优先级线程希望工作项在指定时间后才执行，可以通过延迟工作项来完成，通过设置预定时间，延迟工作项会在指定时间后才提交到工作队列中。
+前面提到过工作队列排空时不会接受工作队列线程以外的工作项提交，但延迟工作项在预约时间到时的提交不受到该限制。</p>
+<p><strong>注意</strong>：延迟工作项只是延迟提交到工作队列，因此只能保证在指定时间后执行，不能保证在指定时间点执行。例如指定20ms后执行，会在20ms后提交到工作队列，此时如果队列中有其它前置工作项，会等其它前置工作项完成后才会执行。</p>
+<p>延迟工作项的使用方法如下：</p>
+<section id="id7">
+<h3>初始化<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 初始化一个延迟工作项 */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">k_work_delayable</span><span class="w"> </span><span class="n">delay_work</span><span class="p">;</span>
+<span class="n">k_work_init_delayable</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">,</span><span class="w"> </span><span class="n">delay_work_handler</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h3>预约<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h3>
+<p>一个延迟工作项既可以预约到系统工作队列也可以预约到用户工作队列，当预约时间到的适合工作项会被提交到工作队列中</p>
+<p><strong>系统工作队列</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 300ms后将延迟工作项提交到系统工作队列中*/</span>
+<span class="n">k_work_schedule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">,</span><span class="w"> </span><span class="n">K_MSEC</span><span class="p">(</span><span class="mi">300</span><span class="p">));</span>
+</pre></div>
+</div>
+<p><strong>用户工作队列</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 300ms后将延迟工作项提交到user_work_q工作队列中*/</span>
+<span class="n">k_work_schedule_for_queue</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_work_q</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">,</span><span class="w"> </span><span class="n">K_MSEC</span><span class="p">(</span><span class="mi">300</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>对一个处于预约状态尚未提交的延迟工作项再次做`k_work_schedule/k_work_schedule_for_queue`不会改变其预约时间</p>
+</section>
+<section id="id9">
+<h3>修改预约<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h3>
+<p>对一个处于预约中的延迟工作项使用下面方法可以更改其预约提交时间</p>
+<p><strong>系统工作队列</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 将系统工作队列delay_work的预约时间修改为3000ms */</span>
+<span class="n">k_work_reschedule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">,</span><span class="w"> </span><span class="n">K_MSEC</span><span class="p">(</span><span class="mi">3000</span><span class="p">));</span>
+</pre></div>
+</div>
+<p><strong>用户工作队列</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 将用户工作队列user_work_q中delay_work的预约时间修改为3000ms */</span>
+
+<span class="n">k_work_reschedule_for_queue</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_work_q</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">,</span><span class="w"> </span><span class="n">K_MSEC</span><span class="p">(</span><span class="mi">3000</span><span class="p">));</span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>取消延迟工作项<a class="headerlink" href="#id10" title="此标题的永久链接">¶</a></h3>
+<p>取消分为三种状态处理：</p>
+<ul class="simple">
+<li><p>工作项处在预约等待状态，取消预约定时器</p></li>
+<li><p>工作项处于列队等待状态，从列队中移除</p></li>
+<li><p>工作项处于运行状态，标记取消，不会中止运行</p></li>
+</ul>
+<p>取消延迟工作项分为异步和同步两种，异步取消只是通知取消不会等待真正的取消就会退出。例如如果取消一个正在运行的工作项，同步取消函数会等到运行完毕后才会返回。</p>
+<p><strong>异步取消</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">k_work_cancel_delayable</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>同步取消</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">k_work_cancel_delayable_sync</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>等待执行<a class="headerlink" href="#id11" title="此标题的永久链接">¶</a></h3>
+<p>执行等待执行时如果延迟工作项在预约状态将取消预约并立即提交到工作队列，并等到执行完成后才返回</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">k_work_sync</span><span class="w"> </span><span class="n">sync</span><span class="p">;</span>
+
+<span class="cm">/* 延迟工作项被立即提交到工作队列，等待执行完后才返回 */</span>
+<span class="n">k_work_flush_delayable</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delay_work</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sync</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3>延迟工作项状态获取<a class="headerlink" href="#id12" title="此标题的永久链接">¶</a></h3>
+<p>下列函数获取延迟工作项的状态</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 返回0表示没有工作，非0表示延迟工作项在忙，非0是由工作项的四种状态组成 */</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">busy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_work_delayable_busy_get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delaywork</span><span class="p">);</span>
+
+<span class="cm">/* 返回false表示没有工作，返回true表示工作项在忙 */</span>
+<span class="kt">bool</span><span class="w"> </span><span class="n">pending</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_work_delayable_is_pending</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delaywork</span><span class="p">);</span>
+
+<span class="cm">/* 返回延迟工作项在第几个绝对tick时被提交到工作队列 */</span>
+<span class="n">k_ticks_t</span><span class="w"> </span><span class="n">expires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_work_delayable_expires_get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delaywork</span><span class="p">);</span>
+
+<span class="cm">/* 返回延迟工作项还有多少个tick才被提交到工作队列中 */</span>
+<span class="n">k_ticks_t</span><span class="w"> </span><span class="n">remaining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_work_delayable_remaining_get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">delaywork</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id13">
+<h2>用户空间工作队列<a class="headerlink" href="#id13" title="此标题的永久链接">¶</a></h2>
+<p>用户空间工作队列是专用在用户空间的工作队列，其内存地址被保护和内核空间隔离，一般只用于zephyr应用程序中。用户空间工作队列的基本构成和工作队列一致：拥有一个队列和工作线程，但结构更为简单，只提供以下4个API，除提交工作项的处理外无法做其它额外的操作。用户空间的工作项也只拥有<code class="docutils literal notranslate"><span class="pre">K_WORK_USER_STATE_PENDING</span></code>和非pending两种状态，分别代表工作项等待运行和已经运行。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define USER_SP_WQ_STACK_SIZE 4096</span>
+<span class="cp">#define USER_SP_WQ_PRIORITY 5</span>
+
+<span class="cm">/* 定义用户空间工作队列线程的堆栈 */</span>
+<span class="n">K_THREAD_STACK_DEFINE</span><span class="p">(</span><span class="n">user_wq_space_stack_area</span><span class="p">,</span><span class="w"> </span><span class="n">USER_SP_WQ_STACK_SIZE</span><span class="w"> </span><span class="p">);</span>
+
+<span class="cm">/* 启动一个用户空间的工作队列 */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">k_work_user_q</span><span class="w"> </span><span class="n">user_space_work_q</span><span class="p">;</span>
+<span class="n">k_work_user_queue_start</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_space_work_q</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">user_wq_space_stack_area</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">USER_SP_WQ_STACK_SIZE</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">USER_SP_WQ_PRIORITY</span><span class="w"> </span><span class="p">,</span>
+<span class="w">                    </span><span class="nb">NULL</span><span class="p">);</span>
+
+<span class="cm">/* 初始化一个用户空间的工作项 */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">k_work_user</span><span class="w"> </span><span class="n">user_space_work</span><span class="p">;</span>
+<span class="n">k_work_user_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_space_work</span><span class="p">,</span><span class="w"> </span><span class="n">work_user_handler</span><span class="p">);</span>
+
+<span class="cm">/* 发送工作项到用户空间工作队列 */</span>
+<span class="n">k_work_user_submit_to_queue</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_space_work_q</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">user_space_work</span><span class="p">);</span>
+
+<span class="cm">/* 查询用户空间的工作项是否处于pending，还未执行处于pending，正在或已经执行完成为非pending */</span>
+<span class="kt">bool</span><span class="w"> </span><span class="n">pending</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_work_user_is_pending</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user_space_work</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id14">
+<h2>其它<a class="headerlink" href="#id14" title="此标题的永久链接">¶</a></h2>
+<p>工作队列中还有一种叫触发工作，其工作项和轮询内核对象绑定，这部分实现在轮询内核对象中，本文不做介绍。</p>
+</section>
+<section id="id15">
+<h2>参考<a class="headerlink" href="#id15" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/kernel/services/threads/workqueue.html">https://docs.zephyrproject.org/latest/kernel/services/threads/workqueue.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="内核" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="system_thread.html" class="btn btn-neutral float-right" title="系统线程" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

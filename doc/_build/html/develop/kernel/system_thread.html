@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>系统线程 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="同步" href="synchronization.html" />
+    <link rel="prev" title="工作队列" href="workq.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workq.html">工作队列</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">系统线程</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">主线程</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">空闲线程</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">其它</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="synchronization.html">同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sem.html">同步-信号量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mutex.html">同步-互斥量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">同步-事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">数据传递-堆栈</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="msgq.html">数据传递-消息队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">系统线程</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/system_thread.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-system-thread">
+<span id="id1"></span><h1>系统线程<a class="headerlink" href="#kernel-system-thread" title="此标题的永久链接">¶</a></h1>
+<p>系统线程是内核初始化过程中自动启动的两个线程，Zephyr内核自动启动两个线程。</p>
+<section id="id2">
+<h2>主线程<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h2>
+<p>Zephyr在内核启动过程中，完成<code class="docutils literal notranslate"><span class="pre">_SYS_INIT_LEVEL_PRE_KERNEL_1</span></code>和<code class="docutils literal notranslate"><span class="pre">_SYS_INIT_LEVEL_PRE_KERNEL_2</span></code>等级的基础硬件初始化后就启动主线程<code class="docutils literal notranslate"><span class="pre">bg_thread_main</span></code>，主线程内在主要完成以下任务：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_SYS_INIT_LEVEL_POST_KERNEL</span></code>等级的设备初始化</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_SYS_INIT_LEVEL_APPLICATION</span></code>等级的设备初始化</p></li>
+<li><p>启动静态初始化线程</p></li>
+<li><p>初始化SMP</p></li>
+<li><p>跳转到<code class="docutils literal notranslate"><span class="pre">main()</span></code>处理</p></li>
+</ul>
+<p>这里的<code class="docutils literal notranslate"><span class="pre">main()</span></code>就是Zephyr的应用程序<code class="docutils literal notranslate"><span class="pre">main()</span></code>入口。</p>
+<p>主线程的优先级由<code class="docutils literal notranslate"><span class="pre">CONFIG_MAIN_THREAD_PRIORITY</span></code>指定，默认配置为最高的可抢占优先级<code class="docutils literal notranslate"><span class="pre">0</span></code>，如果内核被配置为不支持抢占线程，则主线程优先级默认为最低的协作线程优先级<code class="docutils literal notranslate"><span class="pre">-1</span></code>。一般情况下不建议对主线程优先级进行配置。需要注意的是由于主线程的优先级默认比所有抢占优先级都高，应用程序在<code class="docutils literal notranslate"><span class="pre">main()</span></code>中不要随意做“busy
+loop”，否则会导致其它低优先级抢占式线程无法运行。</p>
+<p>主线程的堆栈由<code class="docutils literal notranslate"><span class="pre">CONFIG_MAIN_STACK_SIZE</span></code>指定，默认为1K。由于应用程序的<code class="docutils literal notranslate"><span class="pre">main()</span></code>是在主线程中执行，当应用程序在<code class="docutils literal notranslate"><span class="pre">main()</span></code>中使用大量堆栈时，需要增加<code class="docutils literal notranslate"><span class="pre">CONFIG_MAIN_STACK_SIZE</span></code>的大小。</p>
+<p>主线程是执行内核初始化和应用程序<code class="docutils literal notranslate"><span class="pre">main()</span></code>时必不可少的线程,
+因此在创建主线程时会指定<code class="docutils literal notranslate"><span class="pre">K_ESSENTIAL</span></code>表示其不能被中止，中止主线程会引发致命的系统错误。
+但是当<code class="docutils literal notranslate"><span class="pre">main()</span></code>返回后主线程会主动移掉<code class="docutils literal notranslate"><span class="pre">K_ESSENTIAL</span></code>标记此时主线程可以正常终止并且不会引发错误。</p>
+</section>
+<section id="id3">
+<h2>空闲线程<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h2>
+<p>当系统没有其他工作要做时，休眠线程将执行。在支持硬件休眠的SOC架构下空闲线程会通过电源管理系统让SOC进入休眠以节省电量，
+否则空闲线程只会执行“busy loop” 。
+只要系统在运行，空闲线程就一直存在并且永远不会终止。</p>
+<p>空闲线程始终使用系统配置的最低线程优先级。
+如果系统被配置为不支持可抢占优先级时，空闲线程将变成一个协作线程，因此空闲线程会重复让出
+CPU 以允许其他线程在需要时运行。</p>
+<p>空闲线程是必不可少的线程，在创建空闲线程时会指定<code class="docutils literal notranslate"><span class="pre">K_ESSENTIAL</span></code>表示其不能终止，中止空闲线程会引发致命的系统错误。</p>
+<p>空闲线程的堆栈由<code class="docutils literal notranslate"><span class="pre">CONFIG_IDLE_STACK_SIZE</span></code>指定，由于空闲线程内做的工作需要堆栈不大，因此默认配置为256字节，一些不同的CPU体系架构会有稍微大一点的堆栈，但都不会超过1K字节。</p>
+</section>
+<section id="id4">
+<h2>其它<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h2>
+<p>主线程和空闲线程是Zephyr系统不能缺少的系统线程，同时根据应用程序指定的内核和主板配置选项，也可能产生额外的系统线程。
+例如，启用系统系统工作队列会产生一个系统线程为提交给它的工作项提供服务。</p>
+</section>
+<section id="id5">
+<h2>参考<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/kernel/services/threads/system_threads.html">https://docs.zephyrproject.org/latest/kernel/services/threads/system_threads.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="workq.html" class="btn btn-neutral float-left" title="工作队列" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="synchronization.html" class="btn btn-neutral float-right" title="同步" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

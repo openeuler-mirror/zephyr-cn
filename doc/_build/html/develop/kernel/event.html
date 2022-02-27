@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同步-事件 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="同步-条件变量" href="condition_variables.html" />
+    <link rel="prev" title="同步-轮询" href="poll.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workq.html">工作队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system_thread.html">系统线程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="synchronization.html">同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sem.html">同步-信号量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mutex.html">同步-互斥量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">同步-事件</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#api">API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">使用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">代码分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id11">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">数据传递-堆栈</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="msgq.html">数据传递-消息队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">同步-事件</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/event.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-event">
+<span id="id1"></span><h1>同步-事件<a class="headerlink" href="#kernel-event" title="此标题的永久链接">¶</a></h1>
+<p>事件对象是一种线程同步对象，允许一个或者多个线程等待同一个事件对象，当事件被传递到事件对象时，满足条件的线程都变为就绪。通常使用事件来通知一系列条件已满足。在Zephyr中每个事件对象使用一个32bit数来跟踪传递的事件集，每个bit表示一个事件。事件可以由ISR或者线程发送，发送事件有两种方法：</p>
+<ul class="simple">
+<li><p>设置：覆盖现有的事件集，重写这个32bit数</p></li>
+<li><p>发布：以bit方式<strong>添加</strong>事件到事件基，注意这里只能添加，不能删除</p></li>
+</ul>
+<p>线程可以等待一个或多个事件。在等待多个事件时可以指定等待其中部分或者全部事件。线程在提出等待事件对象时，可以选择在等待前清空等待事件对象上的所有事件。</p>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="此标题的永久链接">¶</a></h2>
+<section id="id2">
+<h3>宏定义<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h3>
+<p><strong>K_EVENT_DEFINE(name)</strong></p>
+<ul class="simple">
+<li><p>静态的定义和初始化事件对象。</p></li>
+<li><p><strong>name</strong>  事件对象名</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>函数<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h3>
+<p><strong>void k_event_init(struct k_event *event)</strong></p>
+<ul class="simple">
+<li><p>初始化事件对象，在使用事件对象前首先使用该函数对其进行初始化。</p></li>
+<li><p><strong>event</strong> 事件对象的地址</p></li>
+</ul>
+<p><strong>void k_event_post(struct k_event *event, uint32_t events)</strong></p>
+<ul class="simple">
+<li><p>发布一个或多个事件到事件对象。如果等待<code class="docutils literal notranslate"><span class="pre">event</span></code>的线程因为发布的事件满足等待条件，该线程被转为就绪，与设置事件不同，发布的事件是增加到事件对象中。</p></li>
+<li><p><strong>event</strong>  事件对象的地址</p></li>
+<li><p><strong>events</strong>  发布的事件集合</p></li>
+</ul>
+<p><strong>void k_event_set(struct k_event *event, uint32_t events)</strong></p>
+<p>设置事件集合到事件对象，将事件对象中的事件设置为<code class="docutils literal notranslate"><span class="pre">events</span></code>。如果等待<code class="docutils literal notranslate"><span class="pre">event</span></code>的线程因为设置的事件满足等待条件，该线程被转为就绪。与发布事件不同，设置事件会取代事件对象中的事件集。</p>
+<ul class="simple">
+<li><p><strong>event</strong>  事件对象的地址</p></li>
+<li><p><strong>events</strong>  设置的事件集合</p></li>
+</ul>
+<p><strong>uint32_t k_event_wait(struct k_event *event, uint32_t events, bool reset, k_timeout_t timeout)</strong></p>
+<p>等待任意指定事件，在<code class="docutils literal notranslate"><span class="pre">event</span></code>上等待，有任意指定的事件被发送，或者是等待时间超过<code class="docutils literal notranslate"><span class="pre">timeout</span></code>。一个线程最多可以等待32个事件，这些事件由<code class="docutils literal notranslate"><span class="pre">events</span></code>中的bit位置标识。</p>
+<p><strong>注意</strong>
+<code class="docutils literal notranslate"><span class="pre">reset</span> <span class="pre">=</span> <span class="pre">true</span></code>将在等待事件前，将<code class="docutils literal notranslate"><span class="pre">event</span></code>中已发生的事件，使用的时候请特别注意。</p>
+<ul class="simple">
+<li><p><strong>event</strong>  事件对象的地址</p></li>
+<li><p><strong>events</strong>  等待的事件集</p></li>
+<li><p><strong>reset</strong> 如果为<code class="docutils literal notranslate"><span class="pre">true</span></code>，等待前清空<code class="docutils literal notranslate"><span class="pre">event</span></code>中已发生的事件，如果为false则不清空</p></li>
+<li><p><strong>timeout</strong>  指定等待事件的最长事件，可以指定为<code class="docutils literal notranslate"><span class="pre">K_NO_WAIT</span></code> 和<code class="docutils literal notranslate"><span class="pre">K_FOREVER</span></code></p></li>
+<li><p>返回值  <strong>事件集</strong>  等待成功后返回收到匹配的事件集 <strong>0</strong> 指定时间内未收到匹配事件</p></li>
+</ul>
+<p><strong>uint32_t k_event_wait_all(struct k_event *event, uint32_t events, bool reset, k_timeout_t  timeout)</strong></p>
+<p>等待所有指定事件，在<code class="docutils literal notranslate"><span class="pre">event</span></code>上等待，指定的所有事件被发送，或者是等待时间超过<code class="docutils literal notranslate"><span class="pre">timeout</span></code>。一个线程最多可以等待32个事件，这些事件由<code class="docutils literal notranslate"><span class="pre">events</span></code>中的bit位置标识。</p>
+<p><strong>注意</strong>
+<code class="docutils literal notranslate"><span class="pre">reset</span> <span class="pre">=</span> <span class="pre">true</span></code>将在等待事件前，将<code class="docutils literal notranslate"><span class="pre">event</span></code>中已发生的事件，使用的时候请特别注意。</p>
+<ul class="simple">
+<li><p><strong>event</strong>  事件对象的地址</p></li>
+<li><p><strong>events</strong>  等待的事件集</p></li>
+<li><p><strong>reset</strong> 如果为<code class="docutils literal notranslate"><span class="pre">true</span></code>，等待前清空<code class="docutils literal notranslate"><span class="pre">event</span></code>中已发生的事件，如果为false则不清空</p></li>
+<li><p><strong>timeout</strong> 指定等待事件的最长事件，可以指定为<code class="docutils literal notranslate"><span class="pre">K_NO_WAIT</span></code> 和 <code class="docutils literal notranslate"><span class="pre">K_FOREVER</span></code></p></li>
+</ul>
+<p>返回值</p>
+<ul class="simple">
+<li><p><strong>事件集</strong>  等待成功后返回收到匹配的事件集</p></li>
+<li><p><strong>0</strong>  指定时间内未收到匹配事件</p></li>
+</ul>
+</section>
+</section>
+<section id="id4">
+<h2>使用<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h2>
+<section id="id5">
+<h3>配置<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h3>
+<p>事件对象的配置选项是<code class="docutils literal notranslate"><span class="pre">CONFIG_EVENTS</span></code>，zephyr内核没有给事件对象配置选项设置默认值，编译时将被识别为未配置，因此要使用事件对象需要增加配置<code class="docutils literal notranslate"><span class="pre">CONFIG_EVENTS=y</span></code>。</p>
+</section>
+<section id="id6">
+<h3>示例<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h3>
+<p><strong>初始化事件对象</strong></p>
+<p>使用函数</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="n">my_event</span><span class="p">;</span>
+<span class="n">k_event_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_event</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>等效于</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">K_EVENT_DEFINE</span><span class="p">(</span><span class="n">my_event</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>设置事件</strong></p>
+<p>下列示例在中断服务程序中设置事件为0x001</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">input_available_interrupt_handler</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="cm">/* 通知线程数据有效 */</span>
+<span class="w">    </span><span class="n">k_event_set</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_event</span><span class="p">,</span><span class="w"> </span><span class="mh">0x001</span><span class="p">);</span>
+
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>发布事件</strong></p>
+<p>下面示例在中断服务程序中发布事件0x120，如果前面的设置事件未被清除，此时<code class="docutils literal notranslate"><span class="pre">my_event</span></code>中的事件为0x121</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">input_available_interrupt_handler</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+
+<span class="w">    </span><span class="cm">/* notify threads that more data is available */</span>
+
+<span class="w">    </span><span class="n">k_event_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_event</span><span class="p">,</span><span class="w"> </span><span class="mh">0x120</span><span class="p">);</span>
+
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>等待事件</strong></p>
+<p>下面示例等待事件50毫秒，在50毫秒内只要前面的设置和发布示例中任意一个发生都会等待成功</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">consumer_thread</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w">  </span><span class="n">events</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_event_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_event</span><span class="p">,</span><span class="w"> </span><span class="mh">0xFFF</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="n">K_MSEC</span><span class="p">(</span><span class="mi">50</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">events</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">printk</span><span class="p">(</span><span class="s">&quot;No input devices are available!&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* 收到事件，根据events进行处理 */</span>
+<span class="w">        </span><span class="p">...</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>下面示例等待事件50毫秒，在50毫秒没只有前面的设置和发布示例都发生了才会等待成功</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">consumer_thread</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w">  </span><span class="n">events</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_event_wait_all</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_event</span><span class="p">,</span><span class="w"> </span><span class="mh">0x121</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="n">K_MSEC</span><span class="p">(</span><span class="mi">50</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">events</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">printk</span><span class="p">(</span><span class="s">&quot;At least one input device is not available!&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* 事件全部收齐，进行处理 */</span>
+<span class="w">        </span><span class="p">...</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h2>代码分析<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h2>
+<!--Zephyr version: 2.7.99 (/mnt/g/zpro/zephyr), build: e8df8a579033--><p>事件对象的代码实现在<code class="docutils literal notranslate"><span class="pre">kernel\events.c</span></code>，事件对象是由<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">k_event</span></code>进行管理</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_wait_q_t</span><span class="w">         </span><span class="n">wait_q</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w">          </span><span class="n">events</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">k_spinlock</span><span class="w"> </span><span class="n">lock</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_q</span></code> 用于管理等待该事件对象的线程</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">events</span></code> 用于保存当前事件对象收到的事件</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lock</span></code> 用于保护内核对事件对象的操作的原子性</p></li>
+</ul>
+<p>事件对象的所有操作都是围绕着<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">k_event</span></code>进行的。</p>
+<section id="id8">
+<h3>初始化<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h3>
+<p>函数实现代码如下，就是对<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">k_event</span></code>定义事件的各个成员进行初始化</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">z_impl_k_event_init</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">lock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_spinlock</span><span class="p">)</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="n">z_waitq_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">wait_q</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">z_object_init</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>用宏可以达到同时定义和初始化的目的，实现如下</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define Z_EVENT_INITIALIZER(obj) \</span>
+<span class="cp">    { \</span>
+<span class="cp">    .wait_q = Z_WAIT_Q_INIT(&amp;obj.wait_q), \</span>
+<span class="cp">    .events = 0 \</span>
+<span class="cp">    }</span>
+
+<span class="cp">#define K_EVENT_DEFINE(name)                               \</span>
+<span class="cp">    STRUCT_SECTION_ITERABLE(k_event, name) =               \</span>
+<span class="cp">        Z_EVENT_INITIALIZER(name);</span>
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h3>等待事件<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h3>
+<p>等待事件可以等待任意指定事件和全部事件，在<code class="docutils literal notranslate"><span class="pre">events.c</span></code>中都是由同一个内部函数<code class="docutils literal notranslate"><span class="pre">k_event_wait_internal</span></code>实现，只是指定的参数不一样</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">uint32_t</span><span class="w"> </span><span class="nf">z_impl_k_event_wait</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span><span class="p">,</span>
+<span class="w">                 </span><span class="kt">bool</span><span class="w"> </span><span class="n">reset</span><span class="p">,</span><span class="w"> </span><span class="n">k_timeout_t</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reset</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">K_EVENT_WAIT_RESET</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">k_event_wait_internal</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">uint32_t</span><span class="w"> </span><span class="nf">z_impl_k_event_wait_all</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span><span class="p">,</span>
+<span class="w">                 </span><span class="kt">bool</span><span class="w"> </span><span class="n">reset</span><span class="p">,</span><span class="w"> </span><span class="n">k_timeout_t</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="cm">/* 使用K_EVENT_WAIT_ALL选项，表示要等待所有的事件收齐 */</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reset</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="n">K_EVENT_WAIT_RESET</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">K_EVENT_WAIT_ALL</span><span class="p">)</span>
+<span class="w">                 </span><span class="o">:</span><span class="w"> </span><span class="n">K_EVENT_WAIT_ALL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">k_event_wait_internal</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>内部函数<code class="docutils literal notranslate"><span class="pre">k_event_wait_internal</span></code>的第三个参数<code class="docutils literal notranslate"><span class="pre">opetions</span></code>用于指定等待的选项，选项定义在<code class="docutils literal notranslate"><span class="pre">events.c</span></code>中</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define K_EVENT_WAIT_ANY      0x00   </span><span class="cm">/* 有1个或者以上事件满足就可退出等待 */</span>
+<span class="cp">#define K_EVENT_WAIT_ALL      0x01   </span><span class="cm">/* 所有事件满足才可退出等待 */</span>
+<span class="cp">#define K_EVENT_WAIT_RESET    0x02   </span><span class="cm">/* 等待事件前先清空已有事件 */</span>
+
+<span class="cp">#define K_EVENT_WAIT_MASK     0x01    </span><span class="cm">/* 用于获取等待类型 */</span>
+</pre></div>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="nf">k_event_wait_internal</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span><span class="p">,</span>
+<span class="w">                      </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">k_timeout_t</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w">  </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">  </span><span class="n">wait_condition</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">k_thread</span><span class="w">  </span><span class="o">*</span><span class="kr">thread</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* isr中只能不做任何等待的等待事件 */</span>
+<span class="w">    </span><span class="n">__ASSERT</span><span class="p">(((</span><span class="n">arch_is_in_isr</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">          </span><span class="n">K_TIMEOUT_EQ</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="n">K_NO_WAIT</span><span class="p">)),</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/* 不允许等待的事件集为0，相当于未等待任何事件 */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">events</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">wait_condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">K_EVENT_WAIT_MASK</span><span class="p">;</span>
+<span class="w">    </span><span class="kr">thread</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">z_current_get</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">k_spinlock_key_t</span><span class="w">  </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/* 检查是否需要清空已有事件 */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">options</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">K_EVENT_WAIT_RESET</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* 检查事件对象已有的事件是否已经满足线程，如果满足则退出 */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">are_wait_conditions_met</span><span class="p">(</span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">wait_condition</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">events</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">k_spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">out</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* 如果等待的超时未立即退出，则不进行等待，此时rv=0 */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">K_TIMEOUT_EQ</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="n">K_NO_WAIT</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">k_spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">out</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* 将线程要等待的事件集和方式保存到线程中 */</span>
+<span class="w">    </span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">events</span><span class="p">;</span>
+<span class="w">    </span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">event_options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">options</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* 等待事件发生，如果等待超时rv仍然保持为0 */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">z_pend_curr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">wait_q</span><span class="p">,</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* 等待事件已发生，发送事件者将把满足的事件交换到线程内的events中，</span>
+<span class="cm">           rv中保存了等待到的事件</span>
+<span class="cm">         */</span>
+<span class="w">        </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">events</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="nl">out</span><span class="p">:</span>
+<span class="w">    </span><span class="cm">/* 由于发生的事件可能会超出等待的事件，因此需要做位与返回 */</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rv</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">events</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>发送事件<a class="headerlink" href="#id10" title="此标题的永久链接">¶</a></h3>
+<p>发送事件分为设置和发布，在<code class="docutils literal notranslate"><span class="pre">events.c</span></code>中都是由同一个内部函数<code class="docutils literal notranslate"><span class="pre">k_event_post_internal</span></code>实现，只是指定的参数不一样</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">z_impl_k_event_post</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">k_event_post_internal</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">z_impl_k_event_set</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">k_event_post_internal</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>内部函数<code class="docutils literal notranslate"><span class="pre">k_event_post_internal</span></code>的第三个参数<code class="docutils literal notranslate"><span class="pre">accumulat</span></code>为<code class="docutils literal notranslate"><span class="pre">true</span></code>时表示发送的<code class="docutils literal notranslate"><span class="pre">events</span></code>是添加到<code class="docutils literal notranslate"><span class="pre">event</span></code>内，为<code class="docutils literal notranslate"><span class="pre">false</span></code>时表示是覆盖<code class="docutils literal notranslate"><span class="pre">event</span></code>的已有事件</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">k_event_post_internal</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">k_event</span><span class="w"> </span><span class="o">*</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">events</span><span class="p">,</span>
+<span class="w">                  </span><span class="kt">bool</span><span class="w"> </span><span class="n">accumulate</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">k_spinlock_key_t</span><span class="w">  </span><span class="n">key</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">k_thread</span><span class="w">  </span><span class="o">*</span><span class="kr">thread</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">      </span><span class="n">wait_condition</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">k_thread</span><span class="w">  </span><span class="o">*</span><span class="n">head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* 上锁，保证内核对事件对象操作的原子性 */</span>
+<span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k_spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/* 检查是附加事件，还是要重置事件 */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">accumulate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* 附加事件 */</span>
+<span class="w">        </span><span class="n">events</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">events</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="cm">/* 对发生的事件进行更新 */</span>
+<span class="w">    </span><span class="n">event</span><span class="o">-&gt;</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">events</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* 遍历事件对象中wait_q内存放等待的thread，并将事件能满足的线程加入到单链表中 */</span>
+<span class="w">    </span><span class="n">_WAIT_Q_FOR_EACH</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">wait_q</span><span class="p">,</span><span class="w"> </span><span class="kr">thread</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* 获取等待类型K_EVENT_WAIT_MASK为0x01，只取最低位，</span>
+<span class="cm">           这里wait_condition是K_EVENT_WAIT_ANY或K_EVENT_WAIT_ALL</span>
+<span class="cm">         */</span>
+<span class="w">        </span><span class="n">wait_condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">event_options</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">K_EVENT_WAIT_MASK</span><span class="p">;</span>
+
+<span class="w">        </span><span class="cm">/* 根据等待类型对线程进行事件匹配，匹配上的线程放入单链表head中 */</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">are_wait_conditions_met</span><span class="p">(</span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">events</span><span class="p">,</span><span class="w"> </span><span class="n">events</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">wait_condition</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">next_event_link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">head</span><span class="p">;</span>
+<span class="w">            </span><span class="n">head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">thread</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* 对事件匹配上的线程单链表进行遍历，通知线程就绪 */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">head</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kr">thread</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">head</span><span class="p">;</span>
+<span class="w">        </span><span class="k">do</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">z_unpend_thread</span><span class="p">(</span><span class="kr">thread</span><span class="p">);</span>
+<span class="w">            </span><span class="n">arch_thread_return_value_set</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">            </span><span class="cm">/* 更新线程收到的事件 */</span>
+<span class="w">            </span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">events</span><span class="p">;</span>
+<span class="w">            </span><span class="cm">/* 线程恢复就绪 */</span>
+<span class="w">            </span><span class="n">z_ready_thread</span><span class="p">(</span><span class="kr">thread</span><span class="p">);</span>
+<span class="w">            </span><span class="kr">thread</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">thread</span><span class="o">-&gt;</span><span class="n">next_event_link</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="kr">thread</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="cm">/* 发送完事件后，引发调度，让刚变为就绪线程有机会执行 */</span>
+<span class="w">    </span><span class="n">z_reschedule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">event</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id11">
+<h2>参考<a class="headerlink" href="#id11" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/kernel/synchronization/events.html">https://docs.zephyrproject.org/latest/reference/kernel/synchronization/events.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="poll.html" class="btn btn-neutral float-left" title="同步-轮询" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="condition_variables.html" class="btn btn-neutral float-right" title="同步-条件变量" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

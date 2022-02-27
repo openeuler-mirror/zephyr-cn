@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zephyr Shell系统使用指南 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../search.html" />
+    <link rel="next" title="驱动" href="../../driver/index.html" />
+    <link rel="prev" title="Zephyr日志系统使用指南" href="../logging/logging_usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">子系统</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../storage/flash_map.html">Zephyr Flash Map实现分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../storage/flash_stream.html">Zephyr flash流式操作</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../storage/nvs.html">Zephyr NVS模块使用说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../storage/nvs_analyze.html">Zephyr NVS原理分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../logging/logging_usage.html">Zephyr日志系统使用指南</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Zephyr Shell系统使用指南</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#shell">shell命令添加方法</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">动态命令</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">内置命令</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">命令行特性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id14">参考</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../kernel/index.html">内核</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">子系统</a></li>
+      <li class="breadcrumb-item active">Zephyr Shell系统使用指南</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/develop/subsys/shell/shell_usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zephyr-shell">
+<span id="shell-shell-usage"></span><h1>Zephyr Shell系统使用指南<a class="headerlink" href="#zephyr-shell" title="此标题的永久链接">¶</a></h1>
+<p>Zephyr的shell系统提供一个类Unix shell界面，用户可以自定义shell命令和处理函数，通过shell界面调用这些处理函数。shell系统可以作为软件系统普通功能的人机界面，也可以通过shell系统埋入调试命令，方便进行软件的调试和分析。</p>
+<p>Zephyr的shell系统提供以下功能：</p>
+<ul class="simple">
+<li><p>支持多实例：多个后端可以开多个shell。</p></li>
+<li><p>与log系统合作共存。</p></li>
+<li><p>支持静态和动态命令。</p></li>
+<li><p>支持字典命令。</p></li>
+<li><p>支持自动补全。</p></li>
+<li><p>内建命令。</p></li>
+<li><p>查看历史命令。</p></li>
+<li><p>支持在线编辑修改命令，支持多行命令。</p></li>
+<li><p>支持ANSI转义码。</p></li>
+<li><p>支持通配符。</p></li>
+<li><p>支持meta key。</p></li>
+<li><p>支持`getopt`和`getopt_long`。</p></li>
+<li><p>可配置剪裁。</p></li>
+</ul>
+<p>Shell系统中一些功能对内存和闪存有较大需求，可以通过禁用不需要的功能减少对内存和闪存的使用。配置`CONFIG_SHELL_MINIMAL=y`可以极大的降低存储的使用，在此基础上有选择地只启用想要的功能，以达到存储的最优使用。</p>
+<section id="shell">
+<h2>shell命令添加方法<a class="headerlink" href="#shell" title="此标题的永久链接">¶</a></h2>
+<section id="id1">
+<h3>实现命令处理函数<a class="headerlink" href="#id1" title="此标题的永久链接">¶</a></h3>
+<p>shell命令处理函数的参数形式是固定的</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">cmd_handler</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="n">shell</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>shell</strong> – <strong>[in]</strong> shell的实例后端。</p></li>
+<li><p><strong>argc</strong> – <strong>[in]</strong> 参数的个数，命令会被计入参数个数中。</p></li>
+<li><p><strong>argv</strong> – <strong>[in]</strong> 参数字符串指针，所有参数都会以字符串的形式送到命令函数.</p></li>
+</ul>
+<p>例如执行shell命令<em>shell_sample 1 2 3</em>，命令函数得到的参数如下:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">argc</span><span class="o">=</span><span class="mi">4</span>
+<span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span>
+<span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;1&quot;</span>
+<span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;2&quot;</span>
+<span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;3&quot;</span>
+</pre></div>
+</div>
+<p>实例：这里实现三个命令函数</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">cmd_info_board</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ARG_UNUSED</span><span class="p">(</span><span class="n">argc</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ARG_UNUSED</span><span class="p">(</span><span class="n">argv</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">shell_print</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="n">CONFIG_BOARD</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">cmd_info_version</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ARG_UNUSED</span><span class="p">(</span><span class="n">argc</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ARG_UNUSED</span><span class="p">(</span><span class="n">argv</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">shell_print</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Zephyr version %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">KERNEL_VERSION_STRING</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">cmd_shell_help</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">shell_print</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;show help: %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">argc</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">){</span>
+<span class="w">        </span><span class="n">shell_help</span><span class="p">(</span><span class="n">sh</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SHELL_CMD_HELP_PRINTED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">&lt;</span><span class="w"> </span><span class="n">argc</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
+<span class="w">        </span><span class="n">shell_print</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;check arg %d: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>注册命令<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h3>
+<p>使用下面三个宏注册静态的shell命令，一旦注册后无法在运行时修改注册的shell命令
+<strong>创建命令</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_CMD</span><span class="p">(</span><span class="n">_syntax</span><span class="p">,</span><span class="w"> </span><span class="n">_subcmd</span><span class="p">,</span><span class="w"> </span><span class="n">_help</span><span class="p">,</span><span class="w"> </span><span class="n">_handler</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>**_syntax** – <strong>[in]</strong> 命令符号。</p></li>
+<li><p>**_subcmd** – <strong>[in]</strong> 指向子命令，为空表示没有子命令。子命令可以再嵌入子命令。</p></li>
+<li><p>**_help** – <strong>[in]</strong> 命令帮助信息。</p></li>
+<li><p>**_handler** – <strong>[in]</strong> 命令函数，，为空表示没有命令函数。</p></li>
+</ul>
+<p><strong>创建子命令集</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_STATIC_SUBCMD_SET_CREATE</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>name</strong> – <strong>[in]</strong> 子命令集名.</p></li>
+<li><p><strong>…</strong> – <strong>[in]</strong> 由多个<code class="docutils literal notranslate"><span class="pre">SHELL_CMD</span></code>或<code class="docutils literal notranslate"><span class="pre">SHELL_ARG_CMD</span></code>组成的，并由<code class="docutils literal notranslate"><span class="pre">SHELL_SUBCMD_SET_END</span></code>结束。</p></li>
+</ul>
+<p><strong>注册命令</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_CMD_REGISTER</span><span class="p">(</span><span class="n">syntax</span><span class="p">,</span><span class="w"> </span><span class="n">subcmd</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>syntax</strong> – <strong>[in]</strong> 命令符号</p></li>
+<li><p><strong>subcmd</strong> – <strong>[in]</strong> 指向子命令，为空表示没有子命令。</p></li>
+<li><p><strong>help</strong> – <strong>[in]</strong> 命令帮助信息。</p></li>
+<li><p><strong>handler</strong> – <strong>[in]</strong> 命令函数，，为空表示没有命令函数。</p></li>
+</ul>
+<p>实例：这里使用上面三个宏注册命令</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* SHELL_CMD 注册两个子命令， board和version，执行时会调用cmd_info_board和cmd_info_version函数</span>
+<span class="cm">   SHELL_STATIC_SUBCMD_SET_CREATE 将子命令组装成子命令集subinfo</span>
+<span class="cm">   SHELL_SUBCMD_SET_END表示子命令集的结束</span>
+<span class="cm"> */</span>
+<span class="n">SHELL_STATIC_SUBCMD_SET_CREATE</span><span class="p">(</span><span class="n">subinfo</span><span class="p">,</span>
+<span class="w">    </span><span class="n">SHELL_CMD</span><span class="p">(</span><span class="n">board</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Show board command.&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_info_board</span><span class="p">),</span>
+<span class="w">    </span><span class="n">SHELL_CMD</span><span class="p">(</span><span class="n">version</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Show info command.&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_info_version</span><span class="p">),</span>
+<span class="w">    </span><span class="n">SHELL_SUBCMD_SET_END</span><span class="w"> </span><span class="cm">/* Array terminated. */</span>
+<span class="p">);</span>
+
+<span class="cm">/* 注册一个根命令shell_sample，执行根命令shell_sample时会调用cmd_shell_help</span>
+<span class="cm">    shell_sample的子命令集为</span>
+<span class="cm"> */</span>
+<span class="n">SHELL_CMD_REGISTER</span><span class="p">(</span><span class="n">shell_sample</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">subinfo</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Sample commands&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_shell_help</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>执行命令<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h3>
+<p>上面实例中注册了根命令 <em>shell_sample</em>
+和其子命令集subinfo，其命令为树机构</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>shell_sample
+    ├── board
+    └── version
+</pre></div>
+</div>
+<p>在shell中可以执行的命令如下: 执行<em>shell_sample</em>
+会调用<code class="docutils literal notranslate"><span class="pre">cmd_shell_help</span></code>显示出帮助信息和参数个数 执行<em>shell_sample
+board</em> 会调用<code class="docutils literal notranslate"><span class="pre">cmd_info_board</span></code>显示出开发板的字符串
+执行<em>shell_sample version</em>
+会调用<code class="docutils literal notranslate"><span class="pre">cmd_info_version</span></code>显示zephyr的版本</p>
+</section>
+<section id="id4">
+<h3>命令参数<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h3>
+<p>使用<code class="docutils literal notranslate"><span class="pre">SHELL_CMD_REGISTER</span></code>和<code class="docutils literal notranslate"><span class="pre">SHELL_CMD</span></code>注册的命令，shell系统并不会为其检查参数个数。zephyr提供了另外两个宏注册命令，在注册时可以指定参数个数。在执行shell命令时shell系统会根据指定的参数个数进行检查，如果不匹配将不执行命令函数，并进行错误提示。
+<strong>创建带参数命令</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_CMD_ARG</span><span class="p">(</span><span class="n">syntax</span><span class="p">,</span><span class="w"> </span><span class="n">subcmd</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span><span class="p">,</span><span class="w"> </span><span class="n">mand</span><span class="p">,</span><span class="w"> </span><span class="n">opt</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>syntax</strong> – <strong>[in]</strong> 命令符号。</p></li>
+<li><p><strong>subcmd</strong> – <strong>[in]</strong> 指向子命令，为空表示没有子命令。子命令可以再嵌入子命令。</p></li>
+<li><p><strong>help</strong> – <strong>[in]</strong> Pointer to a command help string.</p></li>
+<li><p><strong>handler</strong> – <strong>[in]</strong> 命令帮助信息。</p></li>
+<li><p><strong>mand</strong> – <strong>[in]</strong> 必选参数个数，参数个数包含命令本身。</p></li>
+<li><p><strong>opt</strong> – <strong>[in]</strong> 可选参数个数。</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_CMD_ARG_REGISTER</span><span class="p">(</span><span class="n">syntax</span><span class="p">,</span><span class="w"> </span><span class="n">subcmd</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span><span class="p">,</span><span class="w"> </span><span class="n">mandatory</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>syntax</strong> – <strong>[in]</strong> 命令符号</p></li>
+<li><p><strong>subcmd</strong> – <strong>[in]</strong> 指向子命令，为空表示没有子命令。</p></li>
+<li><p><strong>help</strong> – <strong>[in]</strong> 命令帮助信息。</p></li>
+<li><p><strong>handler</strong> – <strong>[in]</strong> 命令函数，，为空表示没有命令函数。</p></li>
+<li><p><strong>mandatory</strong> – <strong>[in]</strong> 必选参数个数，参数个数包含命令本身。</p></li>
+<li><p><strong>optional</strong> – <strong>[in]</strong> 可选参数个数。</p></li>
+</ul>
+<p>注意无论由那种方式定义的shell命令，shell系统都会创建<code class="docutils literal notranslate"><span class="pre">argc</span></code>和<code class="docutils literal notranslate"><span class="pre">argv</span></code>并交由注册的命令函数处理。但由<code class="docutils literal notranslate"><span class="pre">SHELL_CMD_ARG</span></code>定义的命令会指定必选参数数量<code class="docutils literal notranslate"><span class="pre">mandatory</span></code>和可选参数数量<code class="docutils literal notranslate"><span class="pre">optional</span></code>，实际通过shell命令输入的参数数量(包含命令本身)要满足：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mandatory</span> <span class="o">&lt;=</span> <span class="n">argc</span> <span class="o">&lt;=</span> <span class="n">mandatory</span> <span class="o">+</span> <span class="n">optional</span>
+</pre></div>
+</div>
+<p>当不满足时，shell系统会检查参数数量出来并做如下提示</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">shell_sample_args</span><span class="p">:</span><span class="w"> </span><span class="n">wrong</span><span class="w"> </span><span class="n">parameter</span><span class="w"> </span><span class="n">count</span>
+</pre></div>
+</div>
+<p>当<code class="docutils literal notranslate"><span class="pre">mandatory</span></code>和<code class="docutils literal notranslate"><span class="pre">optional</span></code>均被设置为0时，Shell系统不会对参数数量进行检查。
+以下实例</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_CMD_ARG_REGISTER</span><span class="p">(</span><span class="n">shell_sample_args</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Sample arg commands with handle&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd_shell_help</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>表示<em>shell_sample_args</em>必须有3个参数（包含shell_sample_args），但总计不能超过7个，例如
+<em>shell_sample_args 0</em> 非法 <em>shell_sample_args 0 1</em> 合法
+<em>shell_sample_args 0 1 2 3</em> 合法 <em>shell_sample_args 0 1 2 3 4 5 6</em> 非法</p>
+</section>
+</section>
+<section id="id5">
+<h2>动态命令<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h2>
+<section id="id6">
+<h3>动态命令使用方法<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h3>
+<p>动态子命令由<code class="docutils literal notranslate"><span class="pre">SHELL_DYNAMIC_CMD_CREATE</span></code>生成</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_DYNAMIC_CMD_CREATE</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">get</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul>
+<li><p><strong>name</strong> – <strong>[in]</strong> 动态命令入口.</p></li>
+<li><p><strong>get</strong> – <strong>[in]</strong> 一个<code class="docutils literal notranslate"><span class="pre">typedef</span> <span class="pre">void</span> <span class="pre">(*shell_dynamic_get)(size_t</span> <span class="pre">idx,</span> <span class="pre">struct</span> <span class="pre">shell_static_entry</span> <span class="pre">*entry)</span></code>类型的函数，根据<code class="docutils literal notranslate"><span class="pre">idx</span></code>返回不同的<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">shell_static_entry</span></code>类型的命令入口参数。</p>
+<p><code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">shell_static_entry</span></code>和<code class="docutils literal notranslate"><span class="pre">SHELL_CMD_ARG</span></code>指定的静态命令格式一样，指定命令符号，帮助信息，子命令入口，命令函数，和参数个数</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_args</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">mandatory</span><span class="p">;</span><span class="w"> </span><span class="cm">/*!&lt; 必选参数个数. */</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">optional</span><span class="p">;</span><span class="w">  </span><span class="cm">/*!&lt; 可选参数个数. */</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_entry</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">syntax</span><span class="p">;</span><span class="w">            </span><span class="cm">/*!&lt; 命令符号字符串. */</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">help</span><span class="p">;</span><span class="w">            </span><span class="cm">/*!&lt; 帮助信息字符串. */</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_cmd_entry</span><span class="w"> </span><span class="o">*</span><span class="n">subcmd</span><span class="p">;</span><span class="w">    </span><span class="cm">/*!&lt; 子命令入口. */</span>
+<span class="w">    </span><span class="n">shell_cmd_handler</span><span class="w"> </span><span class="n">handler</span><span class="p">;</span><span class="w">        </span><span class="cm">/*!&lt; 命令函数. */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_args</span><span class="w"> </span><span class="n">args</span><span class="p">;</span><span class="w">        </span><span class="cm">/*!&lt; 命令参数个数. */</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>从上面看到get函数返回的shell命令入口和静态命令对应的参数一模一样,</p>
+</li>
+</ul>
+</section>
+<section id="id7">
+<h3>动态命令示例<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h3>
+<p>如下代码片段演示了如何添加一个动态子命令:</p>
+<ol class="arabic">
+<li><p>准备一个<code class="docutils literal notranslate"><span class="pre">typedef</span> <span class="pre">void</span> <span class="pre">(*shell_dynamic_get)(size_t</span> <span class="pre">idx,</span> <span class="pre">struct</span> <span class="pre">shell_static_entry</span> <span class="pre">*entry)</span></code>类型的动态命令获取函数：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dynamic_cmd_get</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">idx</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_entry</span><span class="w"> </span><span class="o">*</span><span class="n">entry</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">idx</span><span class="o">&lt;</span><span class="n">dynamic_cmd_num</span><span class="p">){</span>
+<span class="w">        </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cmd_name_flag</span><span class="o">?</span><span class="w"> </span><span class="n">change_name</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">:</span><span class="n">dynamic_entrys</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">syntax</span><span class="p">;</span>
+<span class="w">        </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">handler</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">dynamic_entrys</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">handler</span><span class="p">;</span>
+<span class="w">        </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">subcmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dynamic_entrys</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">subcmd</span><span class="p">;</span>
+<span class="w">        </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">help</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dynamic_entrys</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">help</span><span class="p">;</span>
+<span class="w">        </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dynamic_entrys</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="p">;</span>
+<span class="w">        </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dynamic_entrys</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="k">else</span><span class="p">{</span>
+<span class="w">        </span><span class="n">entry</span><span class="o">-&gt;</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>生成为动态子命令<code class="docutils literal notranslate"><span class="pre">dynamic_set</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_DYNAMIC_CMD_CREATE</span><span class="p">(</span><span class="n">dynamic_set</span><span class="p">,</span><span class="w"> </span><span class="n">dynamic_cmd_get</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+<li><p>将<code class="docutils literal notranslate"><span class="pre">dynamic_set</span></code>注册到根命令中</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SHELL_CMD_REGISTER</span><span class="p">(</span><span class="n">shell_dynamic</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">dynamic_set</span><span class="p">,</span>
+<span class="w">           </span><span class="s">&quot;Sample dynamic command usage.&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>根命令<em>shell_dynamic</em>的子命令集为<code class="docutils literal notranslate"><span class="pre">dynamic_set</span></code>，子命令集中有哪些子命令是由<code class="docutils literal notranslate"><span class="pre">dynamic_cmd_get</span></code>的输出决定。shell系统在遍历根命令<em>shell_dynamic</em>的子命令时，传入参数<code class="docutils literal notranslate"><span class="pre">idx</span></code>从0开始每次加一的循环调用<code class="docutils literal notranslate"><span class="pre">dynamic_cmd_get</span></code>，直到输出的<code class="docutils literal notranslate"><span class="pre">entry-&gt;syntax</span></code>为空。在上面的示例代码中动态子命令的个数由<code class="docutils literal notranslate"><span class="pre">dynamic_cmd_num</span></code>决定，默认情况下就是<code class="docutils literal notranslate"><span class="pre">dynamic_entrys[]</span></code>中的命令入口数量：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 动态命令数组 */</span>
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_entry</span><span class="w"> </span><span class="n">dynamic_entrys</span><span class="p">[]</span><span class="o">=</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="cm">/* 改变动态命令总数 */</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;total&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cmd_dynamic_total</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">subcmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">help</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Set total cmd number, must more than 1.&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+
+<span class="w">    </span><span class="cm">/* 使用默认子命令名 */</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;org_name&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cmd_dynamic_org_name</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">subcmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">help</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Change to org cmd name.&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+
+<span class="w">    </span><span class="cm">/* 使用新的子命令名 */</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;new_name&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cmd_dynamic_new_name</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">subcmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">help</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Change to new cmd name.&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+
+<span class="w">    </span><span class="cm">/* 动态子命令的子命令演示 */</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;subcmd&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">subcmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">shell_sample</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">help</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Show dynamic sub cmd.&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cmd1&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">subcmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">help</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Show dynamic command cmd1.&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cmd2&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">subcmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">help</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Show dynamic command cmd2.&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">dynamic_cmd_num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">dynamic_entrys</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_entry</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>开机后在shell中输入<code class="docutils literal notranslate"><span class="pre">shell_dynamic</span></code>后按tab后可以看到所有的子命令</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">uart</span><span class="p">:</span><span class="o">~</span><span class="n">$</span><span class="w"> </span><span class="n">shell_dynamic</span>
+<span class="w">  </span><span class="n">total</span><span class="w">     </span><span class="n">org_name</span><span class="w">  </span><span class="n">new_name</span><span class="w">  </span><span class="n">subcmd</span><span class="w">    </span><span class="n">cmd1</span><span class="w">      </span><span class="n">cmd2</span>
+</pre></div>
+</div>
+<p>可以在运行时改变<code class="docutils literal notranslate"><span class="pre">dynamic_cmd_num</span></code>的大小达到改变<em>shell_dynamic</em>的子命令数量，例如<em>total</em>子命令就可以达到这一目的，它对应的命令函数如下：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">cmd_dynamic_total</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">shell</span><span class="w"> </span><span class="o">*</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">){</span>
+<span class="w">        </span><span class="n">shell_help</span><span class="p">(</span><span class="n">sh</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">SHELL_CMD_HELP_PRINTED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">num</span><span class="o">&lt;</span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">dynamic_entrys</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_entry</span><span class="p">)){</span>
+<span class="w">        </span><span class="n">shell_error</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;total set fail, must in 1~%d&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">dynamic_entrys</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">shell_static_entry</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">ENOEXEC</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* 改变动态命令的数量 */</span>
+<span class="w">    </span><span class="n">shell_print</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;set total cmd num %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">num</span><span class="p">);</span>
+<span class="w">    </span><span class="n">dynamic_cmd_num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">num</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>如果执行shell命令<em>shell_dynamic total
+1</em>，<code class="docutils literal notranslate"><span class="pre">cmd_dynamic_total</span></code>被调用将<code class="docutils literal notranslate"><span class="pre">dynamic_cmd_num</span></code>修改为3，此时在shell中输入<em>shell_dynamic</em>后按tab后就只能看到只剩3个子命令：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>uart:~$ shell_dynamic
+  total     org_name  new_name
+</pre></div>
+</div>
+<p>也可以在运行时通过改变<code class="docutils literal notranslate"><span class="pre">cmd_name_flag</span></code>变量的值，让动态子命令的<code class="docutils literal notranslate"><span class="pre">syntax</span></code>发生改变，达到动态改变动态子命令符号的目的。例如执行<em>shell_dynamic
+new_name</em>后<code class="docutils literal notranslate"><span class="pre">cmd_name_flag</span></code>被修改为1，<code class="docutils literal notranslate"><span class="pre">dynamic_cmd_get</span></code>输出的<code class="docutils literal notranslate"><span class="pre">syntax</span></code>将使用<code class="docutils literal notranslate"><span class="pre">change_name</span></code>的内容</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">change_name</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s">&quot;total_new&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;org_name_new&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;new_name_new&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;cmd1_new&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;cmd2_new&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;cmd3_new&quot;</span><span class="p">,</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>此时在shell中输入<em>shell_dynamic</em>后按tab后，看到的就是新的子命令名称</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>uart:~$ shell_dynamic
+  total_new     org_name_new  new_name_new
+</pre></div>
+</div>
+<p>当然也可以修改<code class="docutils literal notranslate"><span class="pre">dynamic_entrys</span></code>的内容达到添加和删除动态子命令的目的，或者是修改其中的子命令函数达到修改子命令功能的目的。</p>
+</section>
+</section>
+<section id="id8">
+<h2>内置命令<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h2>
+<p>shell系统自带内置命令，自带命令可以通过配置项进行配置是否启用来优化shell的空间占用，默认情况下<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_CMDS=y</span></code>开启了部分内置命令，将其设置为<code class="docutils literal notranslate"><span class="pre">n</span></code>可以关闭内置命令。</p>
+<p>Shell的内置命令列表：</p>
+<ul>
+<li><p><strong>clear</strong> ：清屏</p></li>
+<li><p><strong>help</strong>：显示shell所有根命令及帮助信息</p></li>
+<li><p><strong>history</strong>：显示最近执行了的命令</p></li>
+<li><p><strong>resize</strong>：改变终端尺寸。当执行较长命令后，为保证多行显示和←, →, End, Home正常，需要执行该命令重设终端尺寸，目前只有UART后端支持该命令。</p>
+<ul class="simple">
+<li><p><em>resize</em> 命令默认是开启的<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_CMDS_RESIZE=y</span></code></p></li>
+<li><p>默认情况下执行<em>resize</em>后终端的尺寸为80x24，可以通过<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH=80</span></code>和<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_DEFAULT_TERMINAL_HEIGHT=24</span></code>配置改变</p></li>
+<li><p><em>resize</em>有一个<em>default</em>子命令，无论默认配置为多少执行<em>resize
+default</em>后就会把终端大小设置为80X24。</p></li>
+</ul>
+</li>
+<li><p><strong>select</strong>：设置根，通过alt+r可以退回到主根。</p>
+<p>例如主根下按tab可以看到所有的根命令：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>uart:~$
+  clear                 device                devmem
+  help                  history               kernel
+  log                   logging               nrf_clock_control
+  resize                select                shell
+  shell_dict            shell_dynamic         shell_sample
+  shell_sample_args     shell_sample_handler  shell_sample_null
+  shell_sample_sub
+</pre></div>
+</div>
+<p>当执行<em>select
+shell_sample</em>后，在主根下按tab就只能看到<em>shell_sample</em>的子命令：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>uart:~$
+  info     subinfo  arginfo
+</pre></div>
+</div>
+<p>再按看到下面提示表示退回到默认的主根</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Restored</span> <span class="n">default</span> <span class="n">root</span> <span class="n">commands</span>
+</pre></div>
+</div>
+<p><em>select</em>命令默认是关闭的，需要配置<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_CMDS_SELECT=y</span></code>开启</p>
+</li>
+<li><p><strong>shell</strong>：用于设置shell终端的属性，有如下子命令</p>
+<ul class="simple">
+<li><p><em>shell backspace_mode
+backspace</em>：设置Backspace按键为backspace模式，按该按键后不会删除已输入的内容</p></li>
+<li><p><em>shell backspace_mode
+delete</em>：设置Backspace按键为delete模式，按该按键删除已输入的内容</p></li>
+<li><p><em>shell color off</em>：关闭shell终端颜色</p></li>
+<li><p><em>shell color on</em>：开启shell终端颜色</p></li>
+<li><p><em>shell echo
+off</em>：关闭shell回显，输入的命令不会被回显。需要依赖使用的终端软件支持回显。在终端软件必须回显的情况下可以用该命令关闭shell系统的回显。</p></li>
+<li><p><em>shell echo on</em>：开启shell回显，输入的命令被回显。</p></li>
+<li><p><em>shell stats reset</em>：清除log系统丢消息的统计信息。</p></li>
+<li><p><em>shell stats show</em>：显示log系统丢的消息。</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id9">
+<h2>命令行特性<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h2>
+<p>Zephyr的shell系统提供一个类Unix shell界面，通过该命令行界面用户可以操作Zephyr或者用户自己定义的shell命令。Zephyr的shell系统提供了一系列命令行特性方便操作shell命令。</p>
+<section id="id10">
+<h3>文本编辑按键支持<a class="headerlink" href="#id10" title="此标题的永久链接">¶</a></h3>
+<p>左右移动光标：←, → 删除光标所在字符：Backspace, Delete
+移动光标到行尾/首：End, Home 切换插入/覆盖模式：Insert</p>
+</section>
+<section id="id11">
+<h3>自动补全<a class="headerlink" href="#id11" title="此标题的永久链接">¶</a></h3>
+<p>默认<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_TAB=y</span></code>开启了tab支持</p>
+<p>Tab按键支持以下特性：</p>
+<ul>
+<li><p>提示有效命令</p>
+<p>当按下tab时，会自动提示出所有有效的命令。例如敲入<em>she</em>后按下tab会将以<em>she</em>开头的命令都提示出来</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>uart:~$ she
+  shell                 shell_dict            shell_dynamic
+  shell_sample          shell_sample_args     shell_sample_handler
+  shell_sample_null     shell_sample_sub
+</pre></div>
+</div>
+</li>
+<li><p>自动补全</p>
+<p>默认<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_TAB_AUTOCOMPLETION=y</span></code>开启了自动补全，当提示命令只有一条时就会自动补全被执行。例如敲入<em>shell_sample_s</em>
+后按下tab会将命令自动补全到输入位置</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>uart:~$ shell_sample_sub
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="id12">
+<h3>历史命令<a class="headerlink" href="#id12" title="此标题的永久链接">¶</a></h3>
+<p>默认<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_HISTORY=y</span></code>开启了命令历史记录。通过执行 <em>history</em>
+命令可以查看历史执行过的命令。以通过↑ 和↓ 按键切换选择已经执行过的命令。当启用meta按键后也可以通过 Ctrl + n 和 Ctrl + p来切换选择。</p>
+</section>
+<section id="id13">
+<h3>通配符<a class="headerlink" href="#id13" title="此标题的永久链接">¶</a></h3>
+<p>默认<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_WILDCARD=y</span></code>开启了通配符支持，shell支持两个通配符：</p>
+<ul class="simple">
+<li><p>* ：匹配字符串</p></li>
+<li><p>? ：匹配单个字符</p></li>
+</ul>
+</section>
+<section id="metakey">
+<h3>MetaKey<a class="headerlink" href="#metakey" title="此标题的永久链接">¶</a></h3>
+<p>默认情况下<code class="docutils literal notranslate"><span class="pre">CONFIG_SHELL_METAKEYS=y</span></code>开启了metakey的支持。shell支持的metakey和作用如下表</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Meta keys</p></th>
+<th class="head"><p>Action</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Ctrl + a</p></td>
+<td><p>移动光标到行首，等同于Home</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ctrl + b</p></td>
+<td><p>将光标向左移动一个字符，等同于←</p></td>
+</tr>
+<tr class="row-even"><td><p>Ctrl + c</p></td>
+<td><p>放弃当前行输入的内容，另外新开
+一行用于输入命令。类似于回Enter但不执行已经输入了的命令</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ctrl + d</p></td>
+<td><p>删除光标下的字符，等同于Delete</p></td>
+</tr>
+<tr class="row-even"><td><p>Ctrl + e</p></td>
+<td><p>移动光标到行尾，等同于End</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ctrl + f</p></td>
+<td><p>将光标向右移动一个字符，等同于→</p></td>
+</tr>
+<tr class="row-even"><td><p>Ctrl + k</p></td>
+<td><p>删除从光标到行尾的所有字符</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ctrl + l</p></td>
+<td><p>保留当前正在输入的命令，清除屏幕其它的内容。</p></td>
+</tr>
+<tr class="row-even"><td><p>Ctrl + n</p></td>
+<td><p>切换到上一个历史执行的命令</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ctrl + p</p></td>
+<td><p>切换到下一个历史执行的命令</p></td>
+</tr>
+<tr class="row-even"><td><p>Ctrl + u</p></td>
+<td><p>清除当前正在输入的命令</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ctrl + w</p></td>
+<td><p>删除光标侧的一个单词</p></td>
+</tr>
+<tr class="row-even"><td><p>Alt + b</p></td>
+<td><p>移动光标到前一个词</p></td>
+</tr>
+<tr class="row-odd"><td><p>Alt + f</p></td>
+<td><p>移动光标到后一个词</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="id14">
+<h2>参考<a class="headerlink" href="#id14" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/services/shell/index.html">https://docs.zephyrproject.org/latest/services/shell/index.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../logging/logging_usage.html" class="btn btn-neutral float-left" title="Zephyr日志系统使用指南" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../driver/index.html" class="btn btn-neutral float-right" title="驱动" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

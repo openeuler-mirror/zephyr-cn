@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同步-信号量 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="同步-互斥量" href="mutex.html" />
+    <link rel="prev" title="同步" href="synchronization.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workq.html">工作队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system_thread.html">系统线程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="synchronization.html">同步</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">同步-信号量</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">使用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">实现</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id12">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mutex.html">同步-互斥量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">同步-事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">数据传递-堆栈</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="msgq.html">数据传递-消息队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">同步-信号量</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/sem.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-sem">
+<span id="id1"></span><h1>同步-信号量<a class="headerlink" href="#kernel-sem" title="此标题的永久链接">¶</a></h1>
+<section id="id2">
+<h2>使用<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h2>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="此标题的永久链接">¶</a></h3>
+<p><strong>#define K_SEM_DEFINE(name, initial_count, count_limit)</strong></p>
+<ul class="simple">
+<li><p>作用:声明一个k_sem，并初始化</p></li>
+<li><p>name: 声明一个name的k_sem</p></li>
+<li><p>initial_count:初始化count</p></li>
+<li><p>count_limit: 允许最大的count</p></li>
+<li><p>无返回值，如果初始化有问题，会在编译期间出错</p></li>
+</ul>
+<p><strong>int k_sem_init(struct k_sem *sem, unsigned int initial_count,unsigned int limit)</strong></p>
+<ul class="simple">
+<li><p>作用: 初始化sem sem, 要初始化的sem</p></li>
+<li><p>initial_count:初始化</p></li>
+<li><p>count count_limit: 允许最大的count 返回值: 0表示初始化成功</p></li>
+</ul>
+<p><strong>int k_sem_take(struct k_sem *sem, s32_t timeout)</strong></p>
+<ul class="simple">
+<li><p>作用：获取信号</p></li>
+<li><p>sem: 要等待的信号量</p></li>
+<li><p>timeout: 等待时间，单位ms。K_NO_WAIT不等待,K_FOREVER一直等</p></li>
+<li><p>返回值: 0表示拿到sem</p></li>
+</ul>
+<p><strong>void k_sem_give(struct k_sem *sem)</strong></p>
+<ul class="simple">
+<li><p>作用：发送信号</p></li>
+</ul>
+<p><strong>void k_sem_reset(struct k_sem *sem)</strong></p>
+<ul class="simple">
+<li><p>作用：将信号的量的count reset为0</p></li>
+</ul>
+<p><strong>unsigned int k_sem_count_get(struct k_sem *sem)</strong></p>
+<ul class="simple">
+<li><p>作用：获取指定信号量当前的count值</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>使用说明<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h3>
+<p>使用信号量来控制多个线程对一组资源的访问。
+使用信号量在生产线程和消耗线程或ISR之间同步处理。</p>
+<section id="id4">
+<h4>初始化<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h4>
+<p>先初始化一个信号量，下面两种方式的效果是一样的</p>
+<p>方法1,使用宏</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">K_SEM_DEFINE</span><span class="p">(</span><span class="n">my_sem</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>方法2，使用函数</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">k_sem</span> <span class="n">my_sem</span><span class="p">;</span>
+<span class="n">k_sem_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_sem</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4>发送信号量<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h4>
+<p>允许在thread或者ISR中发送信号量，一般情况下发送信号量的thread或者ISR都是资源的生产者。
+例如中断被触发时数据有效，在ISR中通过发信号量通知接收线程接收数据。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">input_data_isr_handler</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="o">/*</span> <span class="n">notify</span> <span class="n">thread</span> <span class="n">that</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">available</span> <span class="o">*/</span>
+    <span class="n">k_sem_give</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_sem</span><span class="p">);</span>
+
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">productor_thread</span><span class="p">(</span><span class="n">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">){</span>
+        <span class="o">/*</span> <span class="n">prepare</span> <span class="n">data</span> <span class="o">*/</span>
+        <span class="o">...</span>
+        <span class="o">/*</span> <span class="n">notify</span> <span class="n">thread</span> <span class="n">that</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">available</span> <span class="o">*/</span>
+        <span class="n">k_sem_give</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_sem</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h4>接收信号量<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h4>
+<p>允许在thread中接收信号量，但实际过程中ISR中接收信号量的情况几乎没有，如果一定要用，timeout只能用K_NO_WAIT。
+一般情况下接收信号量的thread是消费者。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">consumer_thread</span><span class="p">(</span><span class="n">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="o">...</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">){</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">k_sem_take</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_sem</span><span class="p">,</span> <span class="n">K_MSEC</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">printk</span><span class="p">(</span><span class="s2">&quot;Input data not available!&quot;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="o">/*</span> <span class="n">fetch</span> <span class="n">available</span> <span class="n">data</span> <span class="o">*/</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="id7">
+<h2>实现<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h2>
+<p>sem结构体如下,可以看出其基本实现是用的wait_q</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">k_sem</span> <span class="p">{</span>
+    <span class="n">_wait_q_t</span> <span class="n">wait_q</span><span class="p">;</span>
+    <span class="n">u32_t</span> <span class="n">count</span><span class="p">;</span>        <span class="o">//</span><span class="n">记录当前sem</span> <span class="n">cnt</span>
+    <span class="n">u32_t</span> <span class="n">limit</span><span class="p">;</span>        <span class="o">//</span><span class="n">最大cnt限制</span>
+    <span class="n">_POLL_EVENT</span><span class="p">;</span>        <span class="o">//</span><span class="n">提供给poll用</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<section id="id8">
+<span id="id9"></span><h3>初始化<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h3>
+<p>k_sem_init -&gt; z_impl_k_sem_init ，流程分析见注释</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_sem_init(struct k_sem *sem, unsigned int initial_count,
+              unsigned int limit)
+{
+    //参数检测
+    CHECKIF(limit == 0U || initial_count &gt; limit) {
+        return -EINVAL;
+    }
+
+    sem-&gt;count = initial_count;     //设置初始化的sem cnt
+    sem-&gt;limit = limit;             //设置sem cnt最大限制
+    z_waitq_init(&amp;sem-&gt;wait_q);     //初始化wait_q
+#if defined(CONFIG_POLL)
+    sys_dlist_init(&amp;sem-&gt;poll_events);  //如果配置了poll，由于sem可以作为poll的条件，因此这里要初始化sem的poll_event
+#endif
+
+    z_object_init(sem);
+
+    return 0;
+}
+</pre></div>
+</div>
+<p>再看一下使用宏初始化信号量的实现方法</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#define Z_SEM_INITIALIZER(obj, initial_count, count_limit) \</span>
+    <span class="p">{</span> \
+    <span class="o">.</span><span class="n">wait_q</span> <span class="o">=</span> <span class="n">Z_WAIT_Q_INIT</span><span class="p">(</span><span class="o">&amp;</span><span class="n">obj</span><span class="o">.</span><span class="n">wait_q</span><span class="p">),</span> \
+    <span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">initial_count</span><span class="p">,</span> \
+    <span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">count_limit</span><span class="p">,</span> \
+    <span class="n">_POLL_EVENT_OBJ_INIT</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> \
+    <span class="n">_OBJECT_TRACING_INIT</span> \
+    <span class="p">}</span>
+
+<span class="c1">#define K_SEM_DEFINE(name, initial_count, count_limit) \</span>
+    <span class="n">Z_STRUCT_SECTION_ITERABLE</span><span class="p">(</span><span class="n">k_sem</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">=</span> \          <span class="n">定义一个k_sem变量</span>
+        <span class="n">Z_SEM_INITIALIZER</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">initial_count</span><span class="p">,</span> <span class="n">count_limit</span><span class="p">);</span> \   <span class="n">初始化这个变量</span>
+    <span class="n">BUILD_ASSERT</span><span class="p">(((</span><span class="n">count_limit</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> \
+             <span class="p">((</span><span class="n">initial_count</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">count_limit</span><span class="p">)));</span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>发送<a class="headerlink" href="#id10" title="此标题的永久链接">¶</a></h3>
+<p>k_sem_give -&gt; z_impl_k_sem_give，流程分析见注释</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>void z_impl_k_sem_give(struct k_sem *sem)
+{
+    k_spinlock_key_t key = k_spin_lock(&amp;lock);
+
+    //获取正在等待该sem的thread
+    struct k_thread *thread = z_unpend_first_thread(&amp;sem-&gt;wait_q);
+
+    if (thread != NULL) {
+        //如果存在等待sem的thread，将该thread转为就绪
+        arch_thread_return_value_set(thread, 0);
+        z_ready_thread(thread);
+    } else {
+        //如果不存在等待sem的thread, sem cnt +1, 将资源累计，但不能藏limit
+        sem-&gt;count += (sem-&gt;count != sem-&gt;limit) ? 1U : 0U;
+
+        //这里是通知poll该sem的对象条件已满足，这部分在poll分析
+        handle_poll_events(sem);
+    }
+
+    //重新调度，切换ready的thread上
+    z_reschedule(&amp;lock, key);
+}
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>接收<a class="headerlink" href="#id11" title="此标题的永久链接">¶</a></h3>
+<p>k_sem_take-&gt;z_impl_k_sem_take，流程分析见注释</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_sem_take(struct k_sem *sem, s32_t timeout)
+{
+    int ret = 0;
+
+    //ISR中只能不等待的收取sem
+    __ASSERT(((arch_is_in_isr() == false) || (timeout == K_NO_WAIT)), &quot;&quot;);
+
+    k_spinlock_key_t key = k_spin_lock(&amp;lock);
+
+    //如果sem cnt不为0，可获取信号，直接返回
+    if (likely(sem-&gt;count &gt; 0U)) {
+        sem-&gt;count--;
+        k_spin_unlock(&amp;lock, key);
+        ret = 0;
+        goto out;
+    }
+
+    //如果没有信号，且不愿意等待，直接返回
+    if (timeout == K_NO_WAIT) {
+        k_spin_unlock(&amp;lock, key);
+        ret = -EBUSY;
+        goto out;
+    }
+
+    //没有信号，有要等待，会将等待的线程加入了等待列表中，然后重新调度切换到其它thread运行
+    //等待超时或者等到sem后会从这里返回继续运行
+    ret = z_pend_curr(&amp;lock, key, &amp;sem-&gt;wait_q, timeout);
+
+out:
+    return ret;
+}
+</pre></div>
+</div>
+</section>
+<section id="reset">
+<h3>Reset<a class="headerlink" href="#reset" title="此标题的永久链接">¶</a></h3>
+<p>k_sem_reset-&gt;z_impl_k_sem_reset 非常简单，将计数请0</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">static</span> <span class="n">inline</span> <span class="n">void</span> <span class="n">z_impl_k_sem_reset</span><span class="p">(</span><span class="n">struct</span> <span class="n">k_sem</span> <span class="o">*</span><span class="n">sem</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">sem</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="n">U</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="get-cnt">
+<h3>Get cnt<a class="headerlink" href="#get-cnt" title="此标题的永久链接">¶</a></h3>
+<p>k_sem_count_get-&gt;z_impl_k_sem_count_get 也非常简单直接返回count</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">static</span> <span class="n">inline</span> <span class="n">unsigned</span> <span class="nb">int</span> <span class="n">z_impl_k_sem_count_get</span><span class="p">(</span><span class="n">struct</span> <span class="n">k_sem</span> <span class="o">*</span><span class="n">sem</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">sem</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id12">
+<h2>参考<a class="headerlink" href="#id12" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/kernel/synchronization/semaphores.html">https://docs.zephyrproject.org/latest/reference/kernel/synchronization/semaphores.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="synchronization.html" class="btn btn-neutral float-left" title="同步" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mutex.html" class="btn btn-neutral float-right" title="同步-互斥量" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

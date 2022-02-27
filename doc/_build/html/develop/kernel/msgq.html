@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据传递-消息队列 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="数据传递-邮箱" href="mailbox.html" />
+    <link rel="prev" title="数据传递-FIFO/LIFO" href="fifo_lifo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workq.html">工作队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system_thread.html">系统线程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="synchronization.html">同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sem.html">同步-信号量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mutex.html">同步-互斥量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">同步-事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">数据传递-堆栈</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">数据传递-消息队列</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">使用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">实现</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id11">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">数据传递-消息队列</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/msgq.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-msgq">
+<span id="id1"></span><h1>数据传递-消息队列<a class="headerlink" href="#kernel-msgq" title="此标题的永久链接">¶</a></h1>
+<section id="id2">
+<h2>使用<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h2>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="此标题的永久链接">¶</a></h3>
+<p>Message queue的API有下面10个全部声明在kernel.h中，每个函数都有参数<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">k_msgq</span> <span class="pre">*msgq</span></code>.都是指该函数操作或者使用的msgq后面就不在单独列出说明</p>
+<p><strong>void k_msgq_init(struct k_msgq q, char buffer, size_t msg_size, u32_tmax_msgs);</strong></p>
+<p>作用：初始化一个msgq, 内存由使用者分配</p>
+<p>buffer: msgq的buffer，需要由使用者分配，大小为msg_size*max_msgs</p>
+<p>msg_size: msgq中每个message的大小 max_mags: msgq中最多容纳的message数量</p>
+<p><strong>__syscall int k_msgq_alloc_init(struct k_msgq *msgq, size_t msg_size,u32_t max_msgs);</strong></p>
+<p>作用：初始化一个msgq, 内存由msgq从线程池中分配</p>
+<p>msg_size: msgq中每个message的大小</p>
+<p>max_mags: msgq中最多容纳的message数量</p>
+<p><strong>int k_msgq_cleanup(struct k_msgq* msgq);</strong></p>
+<p>作用：释放k_msgq_alloc_init分配msgq内存</p>
+<p><strong>__syscall int k_msgq_put(struct k_msgq *msgq, void*data, s32_t timeout);</strong></p>
+<p>作用：将message放入到msgq</p>
+<p>data：message数据</p>
+<p>timeout:等待时间，单位ms。K_NO_WAIT不等待, K_FOREVER一直等</p>
+<p>返回值：放入成功返回0</p>
+<p><strong>__syscall int k_msgq_get(struct k_msgq *msgq, void* data, s32_t timeout);</strong></p>
+<p>作用：从msgq读出message</p>
+<p>data：message数据</p>
+<p>timeout: 等待时间，单位ms。K_NO_WAIT不等待,K_FOREVER一直等 返回值：读出成功返回0</p>
+<p><strong>__syscall int k_msgq_peek(struct k_msgq *msgq, void* data);</strong></p>
+<p>作用：peek msgq</p>
+<p>data: peek到的message</p>
+<p>返回： peek到数据返回0</p>
+<p><strong>__syscall void k_msgq_purge(struct k_msgq *msgq);</strong></p>
+<p>作用：清空msgq中的message</p>
+<p><strong>__syscall u32_t k_msgq_num_free_get(struct k_msgq *msgq);</strong></p>
+<p>作用：获取msgq还可以放多少个message</p>
+<p>返回值：空闲数目</p>
+<p><strong>__syscall void k_msgq_get_attrs(struct k_msgq *msgq, struct k_msgq_attrs* attrs);</strong></p>
+<p>作用：获取msgq的信息，也就是message的大小，总数量和已使用数量，都放在struct k_msgq_attrs 内</p>
+<p><strong>__syscall u32_t k_msgq_num_used_get(struct k_msgq *msgq);</strong></p>
+<p>作用：获取msgq中有多少个message
+返回值：message数目</p>
+</section>
+<section id="id3">
+<h3>使用说明<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h3>
+<p>可以在ISR中put msgq.也可在ISR内get msgq，但不能等待。
+msgq必须事先指定message的大小和个数。大小需要是2的幂对齐。
+msgq用于异步传输小数据。msgq在读写时需要锁中断，因此不建议用来传输大数据。</p>
+<section id="id4">
+<h4>初始化<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h4>
+<p>初始化一个queue, 由用户分配内存</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">data_item_type</span> <span class="p">{</span>     <span class="o">//</span><span class="n">message的数据结构</span>
+    <span class="n">u32_t</span> <span class="n">field1</span><span class="p">;</span>
+    <span class="n">u32_t</span> <span class="n">field2</span><span class="p">;</span>
+    <span class="n">u32_t</span> <span class="n">field3</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">char</span> <span class="n">__aligned</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="n">my_msgq_buffer</span><span class="p">[</span><span class="mi">10</span> <span class="o">*</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">data_item_type</span><span class="p">)];</span>
+<span class="n">struct</span> <span class="n">k_msgq</span> <span class="n">my_msgq</span><span class="p">;</span>
+
+<span class="n">k_msgq_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_msgq</span><span class="p">,</span> <span class="n">my_msgq_buffer</span><span class="p">,</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">data_item_type</span><span class="p">),</span> <span class="mi">10</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>由message queue自己在线程池中分配</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">k_msgq_alloc_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_msgq</span><span class="p">,</span> <span class="n">sizeof</span><span class="p">(</span><span class="n">data_item_type</span><span class="p">),</span> <span class="mi">10</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="message">
+<h4>写入message<a class="headerlink" href="#message" title="此标题的永久链接">¶</a></h4>
+<p>运行在线程或者ISR中写入message，ISR中写入时不能发生等待。示例如下</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>void producer_thread(void)
+{
+    struct data_item_t data;
+
+    while (1) {
+        /* create data item to send (e.g. measurement, timestamp, ...) */
+        data = ...
+
+        /* send data to consumers */
+        while (k_msgq_put(&amp;my_msgq, &amp;data, K_NO_WAIT) != 0) {
+            /* message queue is full: purge old data &amp; try again */
+            //这里purge并不是必要步骤，是否需要进行purge根据实际应用由用户自己选择
+            k_msgq_purge(&amp;my_msgq);
+        }
+
+        /* data item was successfully added to message queue */
+    }
+}
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4>读message<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h4>
+<p>可以将message从msgq读出, 之后msgq中不再有该message</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">consumer_thread</span><span class="p">(</span><span class="n">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">struct</span> <span class="n">data_item_t</span> <span class="n">data</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">/*</span> <span class="n">get</span> <span class="n">a</span> <span class="n">data</span> <span class="n">item</span> <span class="o">*/</span>
+        <span class="n">k_msgq_get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_msgq</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">data</span><span class="p">,</span> <span class="n">K_FOREVER</span><span class="p">);</span>
+
+        <span class="o">/*</span> <span class="n">process</span> <span class="n">data</span> <span class="n">item</span> <span class="o">*/</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>也可以只是peek，该message任然保留在msgq中</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">consumer_thread</span><span class="p">(</span><span class="n">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">struct</span> <span class="n">data_item_t</span> <span class="n">data</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">/*</span> <span class="n">read</span> <span class="n">a</span> <span class="n">data</span> <span class="n">item</span> <span class="n">by</span> <span class="n">peeking</span> <span class="n">into</span> <span class="n">the</span> <span class="n">queue</span> <span class="o">*/</span>
+        <span class="k">if</span><span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">k_msgq_peek</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_msgq</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">data</span><span class="p">)){</span>
+            <span class="o">/*</span> <span class="n">process</span> <span class="n">data</span> <span class="n">item</span> <span class="o">*/</span>
+        <span class="p">}</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="id6">
+<h2>实现<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h2>
+<p>msgq的实现代码在zephyr/kernel/msg_q.c中，msgq是以ringbuffer的模式进行管理，在初始化的时候建立ringbuffer，读写数据时都是以固定的单位大小从ringbuffer内读写数据。
+msgq的数据结构如下</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">k_msgq</span> <span class="p">{</span>
+    <span class="n">_wait_q_t</span> <span class="n">wait_q</span><span class="p">;</span>       <span class="o">//</span><span class="n">wait_q用于控制msgq的等待</span>
+    <span class="n">struct</span> <span class="n">k_spinlock</span> <span class="n">lock</span><span class="p">;</span>  <span class="o">//</span><span class="n">msgq多线程保护锁</span>
+    <span class="n">size_t</span> <span class="n">msg_size</span><span class="p">;</span>        <span class="o">//</span> <span class="n">message的大小</span>
+    <span class="n">u32_t</span> <span class="n">max_msgs</span><span class="p">;</span>     <span class="o">//</span> <span class="n">msgq最大容纳message的个数</span>
+    <span class="n">char</span> <span class="o">*</span><span class="n">buffer_start</span><span class="p">;</span>     <span class="o">//</span><span class="n">msgq</span> <span class="n">ringbuffer的开始地址</span>
+    <span class="n">char</span> <span class="o">*</span><span class="n">buffer_end</span><span class="p">;</span>       <span class="o">//</span><span class="n">msgq</span> <span class="n">ringbuffer的结束地址</span>
+    <span class="n">char</span> <span class="o">*</span><span class="n">read_ptr</span><span class="p">;</span>             <span class="o">//</span><span class="n">msgq</span> <span class="n">ringbuffer的读指针</span>
+    <span class="n">char</span> <span class="o">*</span><span class="n">write_ptr</span><span class="p">;</span>        <span class="o">//</span><span class="n">msgq</span> <span class="n">ringbuffer的写指针</span>
+    <span class="n">u32_t</span> <span class="n">used_msgs</span><span class="p">;</span>    <span class="o">//</span><span class="n">msgq中有效message的个数</span>
+    <span class="n">u8_t</span> <span class="n">flags</span><span class="p">;</span>                     <span class="o">//</span><span class="n">msgq的ringbuffer从线程池分配标志</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>示意图 如下，每读或者写一个message，读写指针就向前移动msg_size <img alt="msgq" src="../../_images/msgq.png" /></p>
+<section id="id7">
+<h3>初始化/释放<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h3>
+<p>初始化msgq就是对struct_msgq中的各成员进行初始化</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>void k_msgq_init(struct k_msgq *msgq, char *buffer, size_t msg_size,
+         u32_t max_msgs)
+{
+    //初始化各成员
+    msgq-&gt;msg_size = msg_size;
+    msgq-&gt;max_msgs = max_msgs;
+    msgq-&gt;buffer_start = buffer;
+    msgq-&gt;buffer_end = buffer + (max_msgs * msg_size);
+    msgq-&gt;read_ptr = buffer;
+    msgq-&gt;write_ptr = buffer;
+    msgq-&gt;used_msgs = 0;
+    msgq-&gt;flags = 0;        // msgq ringbuffer是由使用者分配，这里设为0
+    z_waitq_init(&amp;msgq-&gt;wait_q);    //初始化msgq的wait_q
+    msgq-&gt;lock = (struct k_spinlock) {};
+
+    z_object_init(msgq);
+}
+</pre></div>
+</div>
+<p>k_msgq_alloc_init-&gt;z_impl_k_msgq_alloc_init,
+msgq内存从线程池中分配，再使用k_msgq_init初始化</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_msgq_alloc_init(struct k_msgq *msgq, size_t msg_size,
+                u32_t max_msgs)
+{
+    void *buffer;
+    int ret;
+    size_t total_size;
+
+    //计算msg_size乘max_msgs，并检查是否溢出，实际调用的是__builtin_mul_overflow
+    if (size_mul_overflow(msg_size, max_msgs, &amp;total_size)) {
+        ret = -EINVAL;
+    } else {
+        //从线程池中分配msgq的ringbuffer 内存
+        buffer = z_thread_malloc(total_size);
+        if (buffer != NULL) {
+            //初始化各变量
+            k_msgq_init(msgq, buffer, msg_size, max_msgs);
+            //使用K_MSGQ_FLAG_ALLOC在flags中标识ringbuffer是从线程池中分配
+            msgq-&gt;flags = K_MSGQ_FLAG_ALLOC;
+            ret = 0;
+        } else {
+            ret = -ENOMEM;
+        }
+    }
+
+    return ret;
+}
+</pre></div>
+</div>
+<p>如果msgq是从线程池中分配的内存，可以使用k_msgq_cleanup将其释放</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int k_msgq_cleanup(struct k_msgq *msgq)
+{
+    //如果还有thread在等待msgq，说明不能释放，退出
+    CHECKIF(z_waitq_head(&amp;msgq-&gt;wait_q) != NULL) {
+        return -EBUSY;
+    }
+
+    //判断alloc标志，并释放内存
+    if ((msgq-&gt;flags &amp; K_MSGQ_FLAG_ALLOC) != 0) {
+        k_free(msgq-&gt;buffer_start);
+        msgq-&gt;flags &amp;= ~K_MSGQ_FLAG_ALLOC;
+    }
+    return 0;
+}
+</pre></div>
+</div>
+</section>
+<section id="mssage">
+<h3>mssage操作<a class="headerlink" href="#mssage" title="此标题的永久链接">¶</a></h3>
+<section id="msgq">
+<h4>写msgq<a class="headerlink" href="#msgq" title="此标题的永久链接">¶</a></h4>
+<p>k_msgq_put-&gt;z_impl_k_msgq_put</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_msgq_put(struct k_msgq *msgq, void *data, s32_t timeout)
+{
+    //isr内写msgq不能等
+    __ASSERT(!arch_is_in_isr() || timeout == K_NO_WAIT, &quot;&quot;);
+
+    struct k_thread *pending_thread;
+    k_spinlock_key_t key;
+    int result;
+
+    key = k_spin_lock(&amp;msgq-&gt;lock);
+
+
+    if (msgq-&gt;used_msgs &lt; msgq-&gt;max_msgs) {
+        //msgq中ringbuffer有空间
+
+        //检查是否有thread在等待读取msgq的message
+        pending_thread = z_unpend_first_thread(&amp;msgq-&gt;wait_q);
+        if (pending_thread != NULL) {
+            //有线程在等message，直接将该数据提供给等待线程
+            (void)memcpy(pending_thread-&gt;base.swap_data, data,
+                   msgq-&gt;msg_size);
+            //等待线程拿到数据后，让等待线程ready，并重新调度
+            arch_thread_return_value_set(pending_thread, 0);
+            z_ready_thread(pending_thread);
+            z_reschedule(&amp;msgq-&gt;lock, key);
+            return 0;
+        } else {
+            //没有线程需要数据，则将数据放入ringbuffer
+            (void)memcpy(msgq-&gt;write_ptr, data, msgq-&gt;msg_size);
+            msgq-&gt;write_ptr += msgq-&gt;msg_size;
+            if (msgq-&gt;write_ptr == msgq-&gt;buffer_end) {
+                msgq-&gt;write_ptr = msgq-&gt;buffer_start;
+            }
+            //更新msgq剩余的message数
+            msgq-&gt;used_msgs++;
+        }
+        result = 0;
+    } else if (timeout == K_NO_WAIT) {
+        //msgq ringbuffer满，且不等待就立即退出
+        result = -ENOMSG;
+    } else {
+        //msgq 满，将message放入swap_data，等待其它thread来读
+        _current-&gt;base.swap_data = data;
+        return z_pend_curr(&amp;msgq-&gt;lock, key, &amp;msgq-&gt;wait_q, timeout);
+    }
+
+    k_spin_unlock(&amp;msgq-&gt;lock, key);
+
+    return result;
+}
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h4>读msgq<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h4>
+<p>k_msgq_get-&gt;z_impl_k_msgq_get</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_msgq_get(struct k_msgq *msgq, void *data, s32_t timeout)
+{
+        //isr内读msgq不能等
+    __ASSERT(!arch_is_in_isr() || timeout == K_NO_WAIT, &quot;&quot;);
+
+    k_spinlock_key_t key;
+    struct k_thread *pending_thread;
+    int result;
+
+    key = k_spin_lock(&amp;msgq-&gt;lock);
+
+    if (msgq-&gt;used_msgs &gt; 0) {
+        //ringbuffer中有数据，直接从ringbuffer中读出message
+        (void)memcpy(data, msgq-&gt;read_ptr, msgq-&gt;msg_size);
+        msgq-&gt;read_ptr += msgq-&gt;msg_size;
+        if (msgq-&gt;read_ptr == msgq-&gt;buffer_end) {
+            msgq-&gt;read_ptr = msgq-&gt;buffer_start;
+        }
+
+        //更新msgq剩余的message数
+        msgq-&gt;used_msgs--;
+
+        //此时ringbuffer有空闲空间，如果有thead在等待写msgq，则在这里写入
+        pending_thread = z_unpend_first_thread(&amp;msgq-&gt;wait_q);
+        if (pending_thread != NULL) {
+            /* add thread&#39;s message to queue */
+            (void)memcpy(msgq-&gt;write_ptr, pending_thread-&gt;base.swap_data,
+                   msgq-&gt;msg_size);
+            msgq-&gt;write_ptr += msgq-&gt;msg_size;
+            if (msgq-&gt;write_ptr == msgq-&gt;buffer_end) {
+                msgq-&gt;write_ptr = msgq-&gt;buffer_start;
+            }
+            //更新msgq剩余的message数
+            msgq-&gt;used_msgs++;
+
+            //等待写入msgq的thread在写入msgq后变为ready，并重新调度
+            arch_thread_return_value_set(pending_thread, 0);
+            z_ready_thread(pending_thread);
+            z_reschedule(&amp;msgq-&gt;lock, key);
+            return 0;
+        }
+        result = 0;
+    } else if (timeout == K_NO_WAIT) {
+        /msgq ringbuffer空，且不等待就立即退出
+        result = -ENOMSG;
+    } else {
+        //msgq 空，将message放入swap_data，等待其它thread来写
+        _current-&gt;base.swap_data = data;
+        return z_pend_curr(&amp;msgq-&gt;lock, key, &amp;msgq-&gt;wait_q, timeout);
+    }
+
+    k_spin_unlock(&amp;msgq-&gt;lock, key);
+
+    return result;
+}
+</pre></div>
+</div>
+</section>
+<section id="peek-msgq">
+<h4>peek msgq<a class="headerlink" href="#peek-msgq" title="此标题的永久链接">¶</a></h4>
+<p>也可以通过peek读message，该方式不会将message从msgq的ringbuffer中删除
+k_msgq_peek-&gt;z_impl_k_msgq_peek</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">z_impl_k_msgq_peek</span><span class="p">(</span><span class="n">struct</span> <span class="n">k_msgq</span> <span class="o">*</span><span class="n">msgq</span><span class="p">,</span> <span class="n">void</span> <span class="o">*</span><span class="n">data</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">k_spinlock_key_t</span> <span class="n">key</span><span class="p">;</span>
+    <span class="nb">int</span> <span class="n">result</span><span class="p">;</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="n">k_spin_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">msgq</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">msgq</span><span class="o">-&gt;</span><span class="n">used_msgs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">//</span><span class="n">ringbuffer中有数据直接copy出去</span>
+        <span class="p">(</span><span class="n">void</span><span class="p">)</span><span class="n">memcpy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">read_ptr</span><span class="p">,</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">msg_size</span><span class="p">);</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="o">//</span><span class="n">ringbuffer中有无数据返回错误</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="n">ENOMSG</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">k_spin_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">msgq</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h4>清空msgq<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h4>
+<p>当不需要msgq中的数据时可以使用k_msgq_purge清空
+k_msgq_purge-&gt;z_impl_k_msgq_purge</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>void z_impl_k_msgq_purge(struct k_msgq *msgq)
+{
+    k_spinlock_key_t key;
+    struct k_thread *pending_thread;
+
+    key = k_spin_lock(&amp;msgq-&gt;lock);
+
+    //清空ringbuffer前，会先让等待读msgq的thead将message读走
+    while ((pending_thread = z_unpend_first_thread(&amp;msgq-&gt;wait_q)) != NULL) {
+        arch_thread_return_value_set(pending_thread, -ENOMSG);
+        z_ready_thread(pending_thread);
+    }
+
+    //复位 ringbuffer
+    msgq-&gt;used_msgs = 0;
+    msgq-&gt;read_ptr = msgq-&gt;write_ptr;
+
+    z_reschedule(&amp;msgq-&gt;lock, key);
+}
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id10">
+<h3>获取msgq信息<a class="headerlink" href="#id10" title="此标题的永久链接">¶</a></h3>
+<p>获取msgq的信息函数实现很简单结合前面k_msgq的结构体很容易理解，这里就不再注释分析了</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">z_impl_k_msgq_get_attrs</span><span class="p">(</span><span class="n">struct</span> <span class="n">k_msgq</span> <span class="o">*</span><span class="n">msgq</span><span class="p">,</span> <span class="n">struct</span> <span class="n">k_msgq_attrs</span> <span class="o">*</span><span class="n">attrs</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">msg_size</span> <span class="o">=</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">msg_size</span><span class="p">;</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">max_msgs</span> <span class="o">=</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">max_msgs</span><span class="p">;</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">used_msgs</span> <span class="o">=</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">used_msgs</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">static</span> <span class="n">inline</span> <span class="n">u32_t</span> <span class="n">z_impl_k_msgq_num_free_get</span><span class="p">(</span><span class="n">struct</span> <span class="n">k_msgq</span> <span class="o">*</span><span class="n">msgq</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">max_msgs</span> <span class="o">-</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">used_msgs</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">static</span> <span class="n">inline</span> <span class="n">u32_t</span> <span class="n">z_impl_k_msgq_num_used_get</span><span class="p">(</span><span class="n">struct</span> <span class="n">k_msgq</span> <span class="o">*</span><span class="n">msgq</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">msgq</span><span class="o">-&gt;</span><span class="n">used_msgs</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id11">
+<h2>参考<a class="headerlink" href="#id11" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://gcc.gnu.org/onlinedocs/gcc/Integer-Overflow-Builtins.html">https://gcc.gnu.org/onlinedocs/gcc/Integer-Overflow-Builtins.html</a>
+<a class="reference external" href="https://docs.zephyrproject.org/latest/reference/kernel/data_passing/message_queues.html">https://docs.zephyrproject.org/latest/reference/kernel/data_passing/message_queues.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fifo_lifo.html" class="btn btn-neutral float-left" title="数据传递-FIFO/LIFO" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mailbox.html" class="btn btn-neutral float-right" title="数据传递-邮箱" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同步-互斥量 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="同步-轮询" href="poll.html" />
+    <link rel="prev" title="同步-信号量" href="sem.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workq.html">工作队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system_thread.html">系统线程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="synchronization.html">同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sem.html">同步-信号量</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">同步-互斥量</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">使用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">实现</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">同步-事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">数据传递-堆栈</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="msgq.html">数据传递-消息队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">同步-互斥量</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/mutex.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-mutex">
+<span id="id1"></span><h1>同步-互斥量<a class="headerlink" href="#kernel-mutex" title="此标题的永久链接">¶</a></h1>
+<section id="id2">
+<h2>使用<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h2>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="此标题的永久链接">¶</a></h3>
+<p><strong>#define K_MUTEX_DEFINE(name)</strong></p>
+<ul class="simple">
+<li><p>作用:定义一个k_mutex，并初始化</p></li>
+<li><p>name:k_mutex name</p></li>
+</ul>
+<p><strong>int k_mutex_init(struct k_mutex *mutex)</strong></p>
+<ul class="simple">
+<li><p>作用: 初始化mutex</p></li>
+<li><p>mutex: 要初始化的mutex</p></li>
+<li><p>返回值: 0标示初始化成功</p></li>
+</ul>
+<p><strong>int k_mutex_lock(struct k_mutex *mutex, s32_t timeout)</strong></p>
+<ul class="simple">
+<li><p>作用：加锁</p></li>
+<li><p>mutex: 加锁的互斥量</p></li>
+<li><p>timeout: 等待时间，单位ms。K_NO_WAIT不等待,K_FOREVER一直等</p></li>
+<li><p>返回值: 0表示加锁成功</p></li>
+</ul>
+<p><strong>int k_mutex_unlock(struct k_mutex *mutex)</strong></p>
+<ul class="simple">
+<li><p>作用：解锁</p></li>
+<li><p>mutex：解锁的互斥量</p></li>
+<li><p>返回值: 0表示解锁成功，-EPERM表示当前thread并不拥有这个互斥量，-EINVAL表示该互斥量没有被锁</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>使用说明<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h3>
+<p>使用互斥量完成对资源的独占访问。 Mutex不能在ISR内使用。</p>
+<section id="id4">
+<h4>初始化<a class="headerlink" href="#id4" title="此标题的永久链接">¶</a></h4>
+<p>先初始化一个互斥量，下面两种方式的效果是一样的</p>
+<p>方法1,使用宏</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">K_MUTEX_DEFINE</span><span class="p">(</span><span class="n">my_mutex</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>方法2，使用函数</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">k_mutex</span> <span class="n">my_mutex</span><span class="p">;</span>
+<span class="n">k_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_mutex</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4>资源独占访问<a class="headerlink" href="#id5" title="此标题的永久链接">¶</a></h4>
+<p>下列示例代码中Thread
+A和B都要去访问一个IO资源，但同一时间IO只能被独占访问，因此使用互斥量包含</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thread_A</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">k_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_mutex</span><span class="p">,</span> <span class="n">K_FOREVER</span><span class="p">);</span>
+
+    <span class="o">//</span><span class="n">Read</span> <span class="n">IO</span>
+    <span class="o">...</span>
+
+    <span class="n">k_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_mutex</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">thread_b</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">k_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_mutex</span><span class="p">,</span> <span class="n">K_FOREVER</span><span class="p">);</span>
+
+    <span class="o">//</span><span class="n">Write</span> <span class="n">IO</span>
+    <span class="o">...</span>
+
+    <span class="n">k_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_mutex</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="id6">
+<h2>实现<a class="headerlink" href="#id6" title="此标题的永久链接">¶</a></h2>
+<p>k_mutex结构体如下，可以看出其基本实现是用的wait_q</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">k_mutex</span> <span class="p">{</span>
+    <span class="o">/**</span> <span class="n">Mutex</span> <span class="n">wait</span> <span class="n">queue</span> <span class="o">*/</span>
+    <span class="n">_wait_q_t</span> <span class="n">wait_q</span><span class="p">;</span>
+    <span class="o">/**</span> <span class="n">Mutex</span> <span class="n">owner</span> <span class="o">*/</span>
+    <span class="n">struct</span> <span class="n">k_thread</span> <span class="o">*</span><span class="n">owner</span><span class="p">;</span> <span class="o">//</span><span class="n">表示该mutex目前属于哪个线程</span>
+
+    <span class="o">/**</span> <span class="n">Current</span> <span class="n">lock</span> <span class="n">count</span> <span class="o">*/</span>
+    <span class="n">u32_t</span> <span class="n">lock_count</span><span class="p">;</span>       <span class="o">//</span><span class="n">可重入锁用</span>
+
+    <span class="o">/**</span> <span class="n">Original</span> <span class="n">thread</span> <span class="n">priority</span> <span class="o">*/</span>
+    <span class="nb">int</span> <span class="n">owner_orig_prio</span><span class="p">;</span>    <span class="o">//</span><span class="n">优先级倒置用</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>可重入锁是指如果一个线程已经拥有了互斥量，那么该线程可以继续多次对该互斥量加锁，同时也要做对应次数的解锁，才能完全释放该互斥量</p>
+<section id="id7">
+<h3>初始化<a class="headerlink" href="#id7" title="此标题的永久链接">¶</a></h3>
+<p>k_mutex_init-&gt;z_impl_k_mutex_init，详细分析见注释</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">z_impl_k_mutex_init</span><span class="p">(</span><span class="n">struct</span> <span class="n">k_mutex</span> <span class="o">*</span><span class="n">mutex</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">mutex</span><span class="o">-&gt;</span><span class="n">owner</span> <span class="o">=</span> <span class="n">NULL</span><span class="p">;</span>        <span class="o">//</span><span class="n">全新的mutex是无owner的</span>
+    <span class="n">mutex</span><span class="o">-&gt;</span><span class="n">lock_count</span> <span class="o">=</span> <span class="mi">0</span><span class="n">U</span><span class="p">;</span>     <span class="o">//</span><span class="n">次数也未加锁</span>
+
+    <span class="n">z_waitq_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="o">-&gt;</span><span class="n">wait_q</span><span class="p">);</span>
+
+    <span class="n">z_object_init</span><span class="p">(</span><span class="n">mutex</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>用宏也可以进行初始化</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#define _K_MUTEX_INITIALIZER(obj) \</span>
+    <span class="p">{</span> \
+    <span class="o">.</span><span class="n">wait_q</span> <span class="o">=</span> <span class="n">Z_WAIT_Q_INIT</span><span class="p">(</span><span class="o">&amp;</span><span class="n">obj</span><span class="o">.</span><span class="n">wait_q</span><span class="p">),</span> \     <span class="o">//</span><span class="n">等同于z_waitq_init</span>
+    <span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">NULL</span><span class="p">,</span> \
+    <span class="o">.</span><span class="n">lock_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> \
+    <span class="o">.</span><span class="n">owner_orig_prio</span> <span class="o">=</span> <span class="n">K_LOWEST_THREAD_PRIO</span><span class="p">,</span> \
+    <span class="n">_OBJECT_TRACING_INIT</span> \
+    <span class="p">}</span>
+
+<span class="c1">#define K_MUTEX_DEFINE(name) \</span>
+    <span class="n">Z_STRUCT_SECTION_ITERABLE</span><span class="p">(</span><span class="n">k_mutex</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">=</span> \
+        <span class="n">_K_MUTEX_INITIALIZER</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h3>加锁<a class="headerlink" href="#id8" title="此标题的永久链接">¶</a></h3>
+<p>k_mutex_lock -&gt; z_impl_k_mutex_unlock，会做下面几件事</p>
+<ol class="arabic simple">
+<li><p>如果互斥量没其它线程用，直接获得互斥量返回</p></li>
+<li><p>如果互斥量是本线程在用，对可重入锁自加</p></li>
+<li><p>如果互斥锁被其它线程用了，进行优先级倒置调整，等待其它线程解锁互斥量</p></li>
+</ol>
+<ol class="arabic simple" start="3">
+<li><p>如果超时内等到其它线程解锁互斥量，回去互斥量然后返回</p></li>
+<li><p>如果等互斥量超时，则放弃等待，检查是否有其它线程还在等待，已等待线程的优先级重新计算要倒置的优先级，重设拥有互斥量线程的优先级</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_mutex_lock(struct k_mutex *mutex, s32_t timeout)
+{
+    int new_prio;
+    k_spinlock_key_t key;
+    bool resched = false;
+
+    key = k_spin_lock(&amp;lock);
+
+
+    //当前互斥量没被锁(lock_count ==0) 或是 当前thread已经拥有该锁(mutex-&gt;owner == _current)
+    if (likely((mutex-&gt;lock_count == 0U) || (mutex-&gt;owner == _current))) {
+
+        //记录thread当前的优先级，用于之后优先级倒置用
+        mutex-&gt;owner_orig_prio = (mutex-&gt;lock_count == 0U) ?
+                    _current-&gt;base.prio :
+                    mutex-&gt;owner_orig_prio;
+
+        mutex-&gt;lock_count++;        //对于未使用的锁这里lock_count会变成1，对于重入锁，这里lock_count会在原来的基础上增加然后返回
+        mutex-&gt;owner = _current;    //更新owner
+
+        k_spin_unlock(&amp;lock, key);
+
+        return 0;
+    }
+
+    //互斥量被其它thread占用，如果不等就立即返回
+    if (unlikely(timeout == (s32_t)K_NO_WAIT)) {
+        k_spin_unlock(&amp;lock, key);
+        return -EBUSY;
+    }
+
+    //如果要等，就进行判断，看自己线程的优先级和拥有互斥量的线程优先级谁高，计算一个新的优先级
+    new_prio = new_prio_for_inheritance(_current-&gt;base.prio,
+                        mutex-&gt;owner-&gt;base.prio);
+
+    //如果互斥量拥有者线程的优先级比较低，则重设优先级，让优先级倒置
+    if (z_is_prio_higher(new_prio, mutex-&gt;owner-&gt;base.prio)) {
+        resched = adjust_owner_prio(mutex, new_prio);
+    }
+
+    //等待mutex释放，会引发调度
+    int got_mutex = z_pend_curr(&amp;lock, key, &amp;mutex-&gt;wait_q, timeout);
+
+    //等到mutex，返回
+    if (got_mutex == 0) {
+        return 0;
+    }
+
+    //等mutex超时
+    key = k_spin_lock(&amp;lock);
+
+    //检查释放有其它线程在等待
+    struct k_thread *waiter = z_waitq_head(&amp;mutex-&gt;wait_q);
+
+    //如果有其它线程在等待，比较Mutex拥有者线程和其它线程的优先级
+    new_prio = (waiter != NULL) ?
+        new_prio_for_inheritance(waiter-&gt;base.prio, mutex-&gt;owner_orig_prio) :
+        mutex-&gt;owner_orig_prio;
+
+    //重设拥有互斥量线程的优先级，并引发调度
+    resched = adjust_owner_prio(mutex, new_prio) || resched;
+
+    if (resched) {
+        z_reschedule(&amp;lock, key);
+    } else {
+        k_spin_unlock(&amp;lock, key);
+    }
+
+    return -EAGAIN;
+}
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h3>解锁<a class="headerlink" href="#id9" title="此标题的永久链接">¶</a></h3>
+<p>k_mutex_unlock-&gt;z_impl_k_mutex_unlock，做下面几件事</p>
+<ol class="arabic simple">
+<li><p>检查解锁者合法性</p></li>
+<li><p>接触重入锁</p></li>
+<li><p>恢复优先级倒置</p></li>
+<li><p>等待锁的线程获取mutex</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int z_impl_k_mutex_unlock(struct k_mutex *mutex)
+{
+    struct k_thread *new_owner;
+
+    //互斥量检查，不能解锁无owner的mutex
+    CHECKIF(mutex-&gt;owner == NULL) {
+        return -EINVAL;
+    }
+
+    //互斥量检查，不能解锁其它thread拥有的mutex
+    CHECKIF(mutex-&gt;owner != _current) {
+        return -EPERM;
+    }
+
+    //不允许解锁一个已经被完全
+    __ASSERT_NO_MSG(mutex-&gt;lock_count &gt; 0U);
+
+    z_sched_lock();
+
+
+    //可重入锁检查，如果没有全部解锁，直接退出
+    if (mutex-&gt;lock_count - 1U != 0U) {
+        mutex-&gt;lock_count--;
+        goto k_mutex_unlock_return;
+    }
+
+
+    k_spinlock_key_t key = k_spin_lock(&amp;lock);
+
+    //mutex可重入锁已全部解完，对优先级倒置进行恢复
+    adjust_owner_prio(mutex, mutex-&gt;owner_orig_prio);
+
+    //检查释放有线程在等mutex
+    new_owner = z_unpend_first_thread(&amp;mutex-&gt;wait_q);
+
+    mutex-&gt;owner = new_owner;
+
+    if (new_owner != NULL) {
+        //如果有线程在等mutex，该线程获取mutex并开始调度
+        mutex-&gt;owner_orig_prio = new_owner-&gt;base.prio;
+        arch_thread_return_value_set(new_owner, 0);
+        z_ready_thread(new_owner);
+        z_reschedule(&amp;lock, key);
+    } else {
+        //如果没有线程等mutex，mutex空闲
+        mutex-&gt;lock_count = 0U;
+        k_spin_unlock(&amp;lock, key);
+    }
+
+
+k_mutex_unlock_return:
+    k_sched_unlock();
+    return 0;
+}
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id10">
+<h2>参考<a class="headerlink" href="#id10" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/kernel/synchronization/mutexes.html">https://docs.zephyrproject.org/latest/reference/kernel/synchronization/mutexes.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sem.html" class="btn btn-neutral float-left" title="同步-信号量" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="poll.html" class="btn btn-neutral float-right" title="同步-轮询" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>同步 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="同步-信号量" href="sem.html" />
+    <link rel="prev" title="系统线程" href="system_thread.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows_docker.html">Windows下基于Docker Desktop开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../west/index.html">West（Zephyr的meta tool）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../driver/index.html">驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../osserivces/index.html">OS服务</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">内核</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workq.html">工作队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system_thread.html">系统线程</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">同步</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">概述</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#k-sem">信号量(k_sem)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#k-mutex">互斥量(k_mutex)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#k-poll">轮询(k_poll)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#k-event">事件(k_event)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#k-condvar">条件变量(k_condvar)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sem.html">同步-信号量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mutex.html">同步-互斥量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="poll.html">同步-轮询</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">同步-事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="condition_variables.html">同步-条件变量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_passing.html">数据传递</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">数据传递-堆栈</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fifo_lifo.html">数据传递-FIFO/LIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="msgq.html">数据传递-消息队列</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mailbox.html">数据传递-邮箱</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pipe.html">数据同步-管道</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">开发者参考</a></li>
+          <li class="breadcrumb-item"><a href="index.html">内核</a></li>
+      <li class="breadcrumb-item active">同步</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/kernel/synchronization.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kernel-synchronization">
+<span id="id1"></span><h1>同步<a class="headerlink" href="#kernel-synchronization" title="此标题的永久链接">¶</a></h1>
+<p>本文简要介绍Zephyr内核提供的同步手段，说明主要属性和特点。</p>
+<p>因为操作系统同步手段的共性，因此本文中有一大部分内容都是操作系统的基本概念。</p>
+<section id="id2">
+<h2>概述<a class="headerlink" href="#id2" title="此标题的永久链接">¶</a></h2>
+<p>在嵌入式操作系统中，多线程被调度器同时调度，从宏观上看是线程是并行执行的，对于并行的线程当有执行步骤有先后顺序要求，执行线程任务间有配合需求以及线程间有源共享的情况时，就需要各线程能够同步。
+所有的嵌入式操作系统都会提供线程同步手段，Zephyr也不例外，Zephyr提供了信号量,互斥锁，轮询, 事件，条件变量五种内核对象作为同步手段。</p>
+</section>
+<section id="k-sem">
+<h2>信号量(k_sem)<a class="headerlink" href="#k-sem" title="此标题的永久链接">¶</a></h2>
+<p>信号量是用于控制多个线程对一组资源的访问，使用信号量在生产者(ISR/Thread)和消费者(thread)之间同步。
+Zephyr的信号量没有比较特殊的地方，标准的信号量接口定义在include/kernel.h中，代码实现在kernel/sem.c中，可查看k_sem相关代码。有以下特性：
+* Zephyr的信号量在初始化时可以指定初始化计数值和最大计数值，生产者give时计数值+1，但不会超过最大值，消费者take时计数值-1，直到为0。一些其它的操作系统不会设置最大计数值。
+* 每次信号量give都会引发调度。
+* 如果多个线程都在等待信号量，新产生的信号量会被等待时间最长的最高优先级线程接收。</p>
+</section>
+<section id="k-mutex">
+<h2>互斥量(k_mutex)<a class="headerlink" href="#k-mutex" title="此标题的永久链接">¶</a></h2>
+<p>Mutex主要是用于解决多线程之间资源保护的问题，当线程打算访问一个共享资源时，需要先拿到该资源的互斥锁。
+当线程拥有锁后正在访问共享资源，其它线程尝试获取锁时会被阻塞，直到访问资源的线程释放锁。
+Zephyr的互斥量没有比较特殊的地方，标准的接口定义在include/kernel.h中，代码实现在kernel/mutex.c中，可查看k_mutex相关代码。有以下特性：
+* Mutex只能用于线程之间，不能用于ISR中。
+* Mutex unlock时会引发调度。
+* 低优先级线程获取锁后有高优先级线程等锁时会引起优先级倒置。</p>
+</section>
+<section id="k-poll">
+<h2>轮询(k_poll)<a class="headerlink" href="#k-poll" title="此标题的永久链接">¶</a></h2>
+<p>poll算是一个比较特殊的内核对象，和一般操作系统中的事件对象相似，也有点类似于posix中的poll().
+polling API对内核对象进行轮询，允许单个线程等待一个或者多个条件满足。条件类型只能是内核对象，目前支持的是Semaphore,
+FIFO, poll signal三种。 例如一个线程使用polling API同时等待3个semaphore，只要有1个semaphore发生时polling API就会得到通知，之后可以由用户根据需求决定要做什么样的操作。
+接口定义在include/kernel.h中，代码实现在kernel/mutex.c中，可查看k_poll相关代码。有以下特性：
+* 等待多个条件时，有一个条件满足k_poll就会返回，因此如果要组合条件，还需要使用代码配合
+* Sem/FIFO满足条件后, k_poll只是接到通知返回，线程并未获取到Sem/FIFO,还需要使用代码主动获取</p>
+</section>
+<section id="k-event">
+<h2>事件(k_event)<a class="headerlink" href="#k-event" title="此标题的永久链接">¶</a></h2>
+<p>事件对象是一种线程同步对象，允许一个或者多个线程等待同一个事件对象，当事件被传递到事件对象时，满足条件的线程都变为就绪。通常使用事件来通知一系列条件已满足。
+接口定义在include/kernel.h中，代码实现在kernel/event.c中，可查看k_event相关代码。有以下特性：
+* 事件可以由线程或ISR发送
+* 事件对象由32bit来标识，一个bit对应一个特定的事件，线程可以等待一个或者多个事件</p>
+</section>
+<section id="k-condvar">
+<h2>条件变量(k_condvar)<a class="headerlink" href="#k-condvar" title="此标题的永久链接">¶</a></h2>
+<p>条件变量通常用于控制共享资源的访问，它允许一个线程等待其它线程创建共享资源需要的条件
+接口定义在include/kernel.h中，代码实现在kernel/condvar.c中，可查看k_condvar相关代码</p>
+</section>
+<section id="id3">
+<h2>参考<a class="headerlink" href="#id3" title="此标题的永久链接">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/kernel/index.html">https://docs.zephyrproject.org/latest/reference/kernel/index.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="system_thread.html" class="btn btn-neutral float-left" title="系统线程" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sem.html" class="btn btn-neutral float-right" title="同步-信号量" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
