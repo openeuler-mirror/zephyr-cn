@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zephyr Flash Map实现分析 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../search.html" />
+    <link rel="next" title="Zephyr flash流式操作" href="flash_stream.html" />
+    <link rel="prev" title="子系统" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">子系统</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Zephyr Flash Map实现分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">分区</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#api">API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">实现分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flash_stream.html">Zephyr flash流式操作</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvs.html">Zephyr NVS模块使用说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvs_analyze.html">Zephyr NVS原理分析</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../driver/index.html">驱动</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">开发者参考</a> &raquo;</li>
+          <li><a href="../index.html">子系统</a> &raquo;</li>
+      <li>Zephyr Flash Map实现分析</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/develop/subsys/storage/flash_map.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zephyr-flash-map">
+<span id="storage-flash-map"></span><h1>Zephyr Flash Map实现分析<a class="headerlink" href="#zephyr-flash-map" title="永久链接至标题">¶</a></h1>
+<blockquote>
+<div><p>在嵌入式系统中，通常会根据功能对Flash区域进行划分，然后按照区域进行使用。Zephyr的Flash Map模块对该功能进行抽象并API封装，方便对Flash区域的封装和使用。</p>
+</div></blockquote>
+<section id="id1">
+<h2>分区<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>在zephyr的<code class="docutils literal notranslate"><span class="pre">include/storage/flash_map.h</span></code>中定义了描述分区的结构体<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_area</span></code>, 各描述字段如下</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fa_id</span><span class="p">;</span><span class="w">              </span><span class="c1">//flash分区ID</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fa_device_id</span><span class="p">;</span><span class="w">       </span><span class="c1">//兼容mcuboot定义的flash分区</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">pad16</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">off_t</span><span class="w"> </span><span class="n">fa_off</span><span class="p">;</span><span class="w">               </span><span class="c1">//该flash分区在flash中的偏移地址</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">fa_size</span><span class="p">;</span><span class="w">             </span><span class="c1">//该flash分区的大小</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">fa_dev_name</span><span class="p">;</span><span class="w">    </span><span class="c1">//flash分区所在flash的设备名</span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<p>zephyr的Flash Map就是由<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_area</span></code>构成，我们可以通过设备树创建分区也可以在运行时自己指定<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_area</span></code></p>
+<section id="id2">
+<h3>设备树创建分区<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h3>
+<p>zephyr使用设备树中的fixed-partitions绑定生成分区表，该flash map的分区表在编译时决定，运行时无法被修改。
+下面示例设备树：</p>
+<div class="highlight-devicetree notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="na">flexspi</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kr">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;okay&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ahb-prefetch</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ahb-read-addr-opt</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">rx-clock-source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kr">reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mh">0x402a8000</span><span class="w"> </span><span class="mh">0x4000</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="mh">0x60000000</span><span class="w"> </span><span class="na">DT_SIZE_M</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="nl">is25wp064</span><span class="p">:</span><span class="w"> </span><span class="nf">is25wp064</span><span class="o">@</span><span class="mi">0</span><span class="cm"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kr">compatible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;nxp,imx-flexspi-nor&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">67108864</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;IS25WP064&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kr">reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">spi-max-frequency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">133000000</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kr">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;okay&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">jedec-id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">9</span><span class="na">d</span><span class="w"> </span><span class="mi">70</span><span class="w"> </span><span class="mi">17</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="n">erase-block-size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">65536</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">write-block-size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="nf">partitions</span><span class="cm"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="kr">compatible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fixed-partitions&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="kr">#address-cells</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="kr">#size-cells</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">            </span><span class="nl">boot_partition</span><span class="p">:</span><span class="w"> </span><span class="nf">partition</span><span class="o">@</span><span class="mi">0</span><span class="cm"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;bootloader&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="kr">reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mh">0x00000000</span><span class="w"> </span><span class="na">DT_SIZE_K</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">};</span><span class="w"></span>
+
+<span class="w">            </span><span class="nl">data_partition</span><span class="p">:</span><span class="w"> </span><span class="nf">partition</span><span class="o">@</span><span class="mi">80000</span><span class="cm"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;data&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="kr">reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mh">0x00080000</span><span class="w"> </span><span class="na">DT_SIZE_K</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">};</span><span class="w"></span>
+<span class="w">            </span><span class="nl">app_partition</span><span class="p">:</span><span class="w"> </span><span class="nf">partition</span><span class="o">@</span><span class="mi">100000</span><span class="cm"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;app&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="kr">reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&lt;</span><span class="mh">0x00100000</span><span class="w"> </span><span class="na">DT_SIZE_M</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+<span class="w">    </span><span class="p">};</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<p>上面示例将一片8M的Flash分成了3个分区：</p>
+<ul class="simple">
+<li><p>boot_partition: flash内偏于地址为0x0, 大小为512K</p></li>
+<li><p>data_partition: flash内偏于地址为0x80000, 大小为512K</p></li>
+<li><p>app_partition: flash内偏于地址为0x100000, 大小为7M</p></li>
+</ul>
+<p>在<code class="docutils literal notranslate"><span class="pre">subsys/storage/flash_map/flash_map_default.c</span></code>通过设备树的宏读取设备树中的partition信息并转换成<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_area</span></code>结构体数组<code class="docutils literal notranslate"><span class="pre">default_flash_map</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//读取设备树</span>
+<span class="cp">#define FLASH_AREA_FOO(part)                                                \</span>
+<span class="cp">    {.fa_id = DT_FIXED_PARTITION_ID(part),                          \</span>
+<span class="cp">    .fa_off = DT_REG_ADDR(part),                                    \</span>
+<span class="cp">    .fa_dev_name = DT_LABEL(DT_MTD_FROM_FIXED_PARTITION(part)),     \</span>
+<span class="cp">    .fa_size = DT_REG_SIZE(part),},</span>
+
+<span class="c1">//遍历所有分区</span>
+<span class="cp">#define FOREACH_PARTITION(n) DT_FOREACH_CHILD(DT_DRV_INST(n), FLASH_AREA_FOO)</span>
+
+<span class="c1">//生成flash map数组</span>
+<span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="n">default_flash_map</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">DT_INST_FOREACH_STATUS_OKAY</span><span class="p">(</span><span class="n">FOREACH_PARTITION</span><span class="p">)</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="c1">//flash map中含有分区的总数</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">flash_map_entries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ARRAY_SIZE</span><span class="p">(</span><span class="n">default_flash_map</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//flash map的指针</span>
+<span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">flash_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">default_flash_map</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p>上面示例设备树被转化成的<code class="docutils literal notranslate"><span class="pre">default_flash_map</span></code>为下面内容</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="n">default_flash_map</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//bootloadr分区</span>
+<span class="w">    </span><span class="p">{.</span><span class="n">fa_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_off</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_dev_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;IS25WP064&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x80000</span><span class="p">,},</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//data分区</span>
+<span class="w">    </span><span class="p">{.</span><span class="n">fa_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_off</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x80000</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_dev_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;IS25WP064&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x80000</span><span class="p">,},</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//app分区</span>
+<span class="w">    </span><span class="p">{.</span><span class="n">fa_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_off</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x100000</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_dev_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;IS25WP064&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x700000</span><span class="p">,},</span><span class="w"></span>
+
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">备注</p>
+<p>fa_id是由<code class="docutils literal notranslate"><span class="pre">DT_FIXED_PARTITION_ID(part)</span></code>生成，设备树被解析产生在<code class="docutils literal notranslate"><span class="pre">devicetree_unfixed.h</span></code>中对应如下，也就是按照设备树partition的顺序进行排列的</p>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define DT_N_S_soc_S_spi_402a8000_S_is25wp064_0_S_partitions_S_partition_0_PARTITION_ID 0</span>
+<span class="cp">#define DT_N_S_soc_S_spi_402a8000_S_is25wp064_0_S_partitions_S_partition_80000_PARTITION_ID 1</span>
+<span class="cp">#define DT_N_S_soc_S_spi_402a8000_S_is25wp064_0_S_partitions_S_partition_100000_PARTITION_ID 2</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>运行时创建分区<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h3>
+<p>运行时创建分区非常简单，直接定义一个<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_area</span></code>变量，并按需求赋值即可。例如在实际写代码过程中，我想在data分区首部4k放一个零时的配置分区，那么可以</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="n">cfg_partition</span><span class="o">=</span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_off</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x80000</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_dev_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;IS25WP064&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x1000</span><span class="p">,</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="永久链接至标题">¶</a></h2>
+<section id="id4">
+<h3>使用示例<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h3>
+<p>下面示例简单演示在data_partition的0x2000处写入4096个byte的数据，再读出0x1000处4096个byte</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">partition</span><span class="p">;</span><span class="w"></span>
+<span class="c1">//打开data_partition</span>
+<span class="n">flash_area_open</span><span class="p">(</span><span class="n">FLASH_AREA_ID</span><span class="p">(</span><span class="n">data_partition</span><span class="p">),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">partition</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//擦除data_partition中偏移地址0x2000处4k大小的flash空间</span>
+<span class="n">flash_area_erase</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span><span class="w"> </span><span class="mh">0x2000</span><span class="p">,</span><span class="w"> </span><span class="mi">4096</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//写入4K数据到data_partition中偏移地址0x2000</span>
+<span class="n">flase_area_write</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span><span class="w"> </span><span class="mh">0x2000</span><span class="p">,</span><span class="w"> </span><span class="n">write_buf</span><span class="p">,</span><span class="w"> </span><span class="mi">4096</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//从data_partition中偏移地址为0x1000处读出4K数据</span>
+<span class="n">flase_area_read</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1000</span><span class="p">,</span><span class="w"> </span><span class="n">read_buf</span><span class="p">,</span><span class="w"> </span><span class="mi">4096</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//关闭partition</span>
+<span class="n">flase_area_close</span><span class="p">(</span><span class="n">partition</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>下面示例运行时自定义的flase_area</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//自定义flase_area</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="n">cfg_partition</span><span class="o">=</span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_off</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x80000</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_dev_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;IS25WP064&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">fa_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x1000</span><span class="p">,</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+<span class="c1">//擦除cfg_partition中偏移地址0x0处4k大小的flash空间</span>
+<span class="n">flash_area_erase</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cfg_partition</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0</span><span class="p">,</span><span class="w"> </span><span class="mi">4096</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//写入4K数据到cfg_partition中偏移地址0x0</span>
+<span class="n">flase_area_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cfg_partition</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0</span><span class="p">,</span><span class="w"> </span><span class="n">write_buf</span><span class="p">,</span><span class="w"> </span><span class="mi">4096</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">重要</p>
+<p>注意: 运行时自定义的flase_area, 不需要使用<code class="docutils literal notranslate"><span class="pre">flash_area_open</span></code>和<code class="docutils literal notranslate"><span class="pre">flash_area_close</span></code>进行管理，而能直接做读写操作.</p>
+</div>
+</section>
+<section id="id5">
+<h3>API说明<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h3>
+<p>flash_area的API几乎从API名和参数就可以自说明，这里就仅做简单注释说明，稍微复杂一点的API通过后文的API实现分析也能知道详细用途。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//判断flash partition是否存在</span>
+<span class="c1">//例如FLASH_AREA_LABEL_EXISTS(data)，会转换为一个宏，通过判断该宏是否被定义来判断label为data的partition是否存在</span>
+<span class="cp">#define FLASH_AREA_LABEL_EXISTS(label) \</span>
+<span class="cp">    DT_HAS_FIXED_PARTITION_LABEL(label)</span>
+
+<span class="c1">//节点lbl的lable</span>
+<span class="c1">//例如FLASH_AREA_LABEL_STR(data_partition)就是&quot;data&quot;</span>
+<span class="cp">#define FLASH_AREA_LABEL_STR(lbl) \</span>
+<span class="cp">    DT_PROP(DT_NODE_BY_FIXED_PARTITION_LABEL(lbl), label)</span>
+
+<span class="c1">//指定partition的ID</span>
+<span class="c1">//例如例如FLASH_AREA_LABEL_STR(data)就是1</span>
+<span class="cp">#define FLASH_AREA_ID(label) \</span>
+<span class="cp">    DT_FIXED_PARTITION_ID(DT_NODE_BY_FIXED_PARTITION_LABEL(label))</span>
+
+<span class="c1">//分区在flash中的偏移地址</span>
+<span class="c1">//例如FLASH_AREA_OFFSET(data)是0x8000</span>
+<span class="cp">#define FLASH_AREA_OFFSET(label) \</span>
+<span class="cp">    DT_REG_ADDR(DT_NODE_BY_FIXED_PARTITION_LABEL(label))</span>
+
+<span class="c1">//分区的大小</span>
+<span class="c1">//FLASH_AREA_SIZE(data)是512K</span>
+<span class="cp">#define FLASH_AREA_SIZE(label) \</span>
+<span class="cp">    DT_REG_SIZE(DT_NODE_BY_FIXED_PARTITION_LABEL(label))</span>
+
+<span class="c1">//打开flash_area，获取指定id的flash_area</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_open</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">**</span><span class="n">fa</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//关闭flash_area</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">flash_area_close</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//读取flash_area内指定地址和长度的内容</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_read</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">dst</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//向flash_area内指定地址写入指定长度的内容，写入长度要与flash_area_align返回的值大小对齐</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">src</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//擦除flash_arean内指定地址和长度的区域，擦除长度要满足flash本身或驱动的长度对齐限制，可以从flash_area_get_sectors得到。</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_erase</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//获取flash_area写入对齐长度</span>
+<span class="kt">uint8_t</span><span class="w"> </span><span class="nf">flash_area_align</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//获取flash_area内扇区排列分布情况</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_get_sectors</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">fa_id</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="o">*</span><span class="n">count</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_sector</span><span class="w"> </span><span class="o">*</span><span class="n">sectors</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//使用user_cb遍历所有flash分区</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">flash_area_foreach</span><span class="p">(</span><span class="n">flash_area_cb_t</span><span class="w"> </span><span class="n">user_cb</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">user_data</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//坚持flash分区是否有驱动</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_has_driver</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//获取flash分区的flash驱动device</span>
+<span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">flash_area_get_device</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">);</span><span class="w"></span>
+<span class="kt">uint8_t</span><span class="w"> </span><span class="nf">flash_area_erased_val</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//对flash分区内指定区域的内容进行sha256校验比较</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_check_int_sha256</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area_check</span><span class="w"> </span><span class="o">*</span><span class="n">fac</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id6">
+<h2>实现分析<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h2>
+<p>flash_area的实现比较简单，主要是对flash驱动进行了封装，并加入分区的管理。</p>
+<section id="open-close">
+<h3>open &amp; close<a class="headerlink" href="#open-close" title="永久链接至标题">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">flash_area_open</span></code>就是根据id取得编译时确定好的<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_area</span></code>数组成员指针</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_open</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">**</span><span class="n">fap</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">area</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//没有flash_map</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">flash_map</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EACCES</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//通过id找出匹配的flash_area</span>
+<span class="w">    </span><span class="c1">//get_flash_area_from_id通过匹配flash_map中成员的fa_id和参数id，完成查找</span>
+<span class="w">    </span><span class="n">area</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_flash_area_from_id</span><span class="p">(</span><span class="n">id</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">area</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">ENOENT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="o">*</span><span class="n">fap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">area</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">flash_area_close</span></code>是一个空函数，未做任何事。</p>
+</section>
+<section id="read-write-erase">
+<h3>read &amp; write &amp; erase<a class="headerlink" href="#read-write-erase" title="永久链接至标题">¶</a></h3>
+<p>读写擦三个API，操作的方式都一样：通过device_get_binding获取flash device，然后通过flash API操作。只列出read的实现说明：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_read</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">dst</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//坚持操作的offset和len是否超过分区范围</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">is_in_flash_area_bounds</span><span class="p">(</span><span class="n">fa</span><span class="p">,</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//获取flash device</span>
+<span class="w">    </span><span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_dev_name</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//进行flash操作，对于写和擦除的实现这里就调用flase_write和flash_erase</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">flash_read</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_off</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="n">dst</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">//分区范围检查非常简单，就是将offset和len与分区的大小进行对比</span>
+<span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">is_in_flash_area_bounds</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="kt">off_t</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">off</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">((</span><span class="n">off</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_size</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="flash">
+<h3>获取flash分区相关信息<a class="headerlink" href="#flash" title="永久链接至标题">¶</a></h3>
+<p>检查是否有flash驱动支持该flash分区</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_has_driver</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//获取分区flash驱动设备名对应的flash device，如果不为NULL表示有驱动可用</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_dev_name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">ENODEV</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>获取flash分区所使用的flash device</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">flash_area_get_device</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_dev_name</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>获取flash分析写入对齐长度</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">uint8_t</span><span class="w"> </span><span class="nf">flash_area_align</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_dev_name</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//写入对齐的长度和分区所在的flash写入对齐长度一致</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">flash_get_write_block_size</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>flash分区中被擦除位置的值</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">uint8_t</span><span class="w"> </span><span class="nf">flash_area_erased_val</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_parameters</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//和flash驱动擦除flash后的值一致</span>
+<span class="w">    </span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_get_parameters</span><span class="p">(</span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_dev_name</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">param</span><span class="o">-&gt;</span><span class="n">erase_value</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="sha256">
+<h3>分区sha256校验对比<a class="headerlink" href="#sha256" title="永久链接至标题">¶</a></h3>
+<p>当配置<code class="docutils literal notranslate"><span class="pre">CONFIG_FLASH_AREA_CHECK_INTEGRITY=y</span></code>后flash map提供<code class="docutils literal notranslate"><span class="pre">flash_area_check_int_sha256</span></code>支持对分区内指定区域的sha256计算并比较。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area_check</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">match</span><span class="p">;</span><span class="w">           </span><span class="c1">// 256bit比较样本</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">clen</span><span class="p">;</span><span class="w">                    </span><span class="c1">// 比较内容的长度</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">off</span><span class="p">;</span><span class="w">                             </span><span class="c1">// 比较内容在分区内的偏移地址</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">rbuf</span><span class="p">;</span><span class="w">                  </span><span class="c1">// 计算sha256用的buf</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">rblen</span><span class="p">;</span><span class="w">                   </span><span class="c1">// 计算sha256用的buf长度</span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="c1">//计算flash_area内从off开始内容长度为clen的sha256，并与match比较，一致时返回0，不一致时返回负数</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">flash_area_check_int_sha256</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area_check</span><span class="w"> </span><span class="o">*</span><span class="n">fac</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">hash</span><span class="p">[</span><span class="n">TC_SHA256_DIGEST_SIZE</span><span class="p">];</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">tc_sha256_state_struct</span><span class="w"> </span><span class="n">sha</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">to_read</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">pos</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fa</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">fac</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">match</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"></span>
+<span class="w">        </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">rbuf</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">clen</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">rblen</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//检查的sha256的内容是否已经超出分区范围</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">is_in_flash_area_bounds</span><span class="p">(</span><span class="n">fa</span><span class="p">,</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">clen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//初始化sha256计算模块</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tc_sha256_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sha</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">TC_CRYPTO_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_dev_name</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">to_read</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">rblen</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">clen</span><span class="p">;</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">to_read</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">to_read</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">clen</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">to_read</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">clen</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">pos</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//读出flash分区内的内容</span>
+<span class="w">        </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_read</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">fa</span><span class="o">-&gt;</span><span class="n">fa_off</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">off</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pos</span><span class="p">),</span><span class="w"></span>
+<span class="w">                </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">rbuf</span><span class="p">,</span><span class="w"> </span><span class="n">to_read</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//计算读出内容的sha256值</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tc_sha256_update</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sha</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">rbuf</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="n">to_read</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">TC_CRYPTO_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//完成hash计算</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tc_sha256_final</span><span class="p">(</span><span class="n">hash</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sha</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">TC_CRYPTO_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">ESRCH</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//比较sha256</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">memcmp</span><span class="p">(</span><span class="n">hash</span><span class="p">,</span><span class="w"> </span><span class="n">fac</span><span class="o">-&gt;</span><span class="n">match</span><span class="p">,</span><span class="w"> </span><span class="n">TC_SHA256_DIGEST_SIZE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EILSEQ</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3>遍历flash分区<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h3>
+<p>通过flash_area_foreach可以遍历所有的flash分区，读取flash分区信息</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//遍历分区回调</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_area_cb_t</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_area</span><span class="w"> </span><span class="o">*</span><span class="n">fa</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">user_data</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//用户实现一个flash_area_cb_t类型的回调user_cb，在函数内对flash_map逐个遍历，将flash_area的信息送给回调</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">flash_area_foreach</span><span class="p">(</span><span class="n">flash_area_cb_t</span><span class="w"> </span><span class="n">user_cb</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">user_data</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">flash_map_entries</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">user_cb</span><span class="p">(</span><span class="o">&amp;</span><span class="n">flash_map</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">user_data</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h2>参考<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/storage/flash_map/flash_map.html">https://docs.zephyrproject.org/latest/reference/storage/flash_map/flash_map.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="子系统" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="flash_stream.html" class="btn btn-neutral float-right" title="Zephyr flash流式操作" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

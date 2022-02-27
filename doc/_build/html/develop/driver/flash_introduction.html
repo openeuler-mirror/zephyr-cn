@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zephyr Flash驱动之驱动模型 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="prev" title="驱动" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../subsys/index.html">子系统</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">驱动</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Zephyr Flash驱动之驱动模型</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">概述</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">接口</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">驱动实现接口</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">使用示例</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#jesd216">关于JESD216</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">开发者参考</a> &raquo;</li>
+          <li><a href="index.html">驱动</a> &raquo;</li>
+      <li>Zephyr Flash驱动之驱动模型</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/develop/driver/flash_introduction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zephyr-flash">
+<span id="driver-flash-introduction"></span><h1>Zephyr Flash驱动之驱动模型<a class="headerlink" href="#zephyr-flash" title="永久链接至标题">¶</a></h1>
+<p>本文介绍zephyr传感器驱动接口定义,使用和实现接口说明。</p>
+<section id="id1">
+<h2>概述<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>Zephyr在flash.h中定义了统一的flash驱动接口，zephyr
+flash的驱动模型提供了如下接口功能：</p>
+<ul class="simple">
+<li><p>对Flash操作的读，写，擦。</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_read</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_write</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_erase</span></code></p></li>
+</ul>
+</li>
+<li><p>读取page layout信息``CONFIG_FLASH_PAGE_LAYOUT=y``后有效</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_get_page_info_by_offs</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_get_page_info_by_idx</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_get_page_count</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_page_foreach</span></code></p></li>
+</ul>
+</li>
+<li><p>读取sfdp信息</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_sfdp_read</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_read_jedec_id</span></code></p></li>
+</ul>
+</li>
+<li><p>读取flash信息</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_get_write_block_size</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flash_get_parameters</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id2">
+<h2>接口<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<section id="id3">
+<h3>类型定义<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h3>
+<section id="typedef-bool-flash-page-cb-const-struct-flash-pages-info-info-void-data">
+<h4><code class="docutils literal notranslate"><span class="pre">typedef</span> <span class="pre">bool</span> <span class="pre">(*flash_page_cb)(const</span> <span class="pre">struct</span> <span class="pre">flash_pages_info</span> <span class="pre">*info,</span> <span class="pre">void</span> <span class="pre">*data)</span></code><a class="headerlink" href="#typedef-bool-flash-page-cb-const-struct-flash-pages-info-info-void-data" title="永久链接至标题">¶</a></h4>
+<p>通过<code class="docutils literal notranslate"><span class="pre">flash_page_foreach()</span></code>遍历flash page时，注册回调<code class="docutils literal notranslate"><span class="pre">flash_page_cb</span></code>来遍历所有flash page。</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>info</strong> 当前页信息</p></li>
+<li><p><strong>data</strong> 回调的私有数据</p></li>
+</ul>
+<p><strong>返回值</strong></p>
+<ul class="simple">
+<li><p><strong>true</strong> 继续遍历</p></li>
+<li><p><strong>false</strong> 中止遍历</p></li>
+</ul>
+</section>
+</section>
+<section id="id4">
+<h3>函数<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h3>
+<section id="int-flash-read-const-struct-device-dev-off-t-offset-void-data-size-t-len">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">flash_read(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">off_t</span> <span class="pre">offset,</span> <span class="pre">void</span> <span class="pre">*data,</span> <span class="pre">size_t</span> <span class="pre">len)</span></code><a class="headerlink" href="#int-flash-read-const-struct-device-dev-off-t-offset-void-data-size-t-len" title="永久链接至标题">¶</a></h4>
+<p>读Flash，无论那种flash对读地址和大小都没有对齐的要求。</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+<li><p><strong>offset</strong> Flash内的偏移地址</p></li>
+<li><p><strong>data</strong> 存放读出数据的内存地址</p></li>
+<li><p><strong>len</strong> 要读出数据的长度</p></li>
+</ul>
+<p><strong>返回值</strong></p>
+<p>0表示成功，负值表示失败。</p>
+</section>
+<section id="int-flash-write-const-struct-device-dev-off-t-offset-void-data-size-t-len">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">flash_write(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">off_t</span> <span class="pre">offset,</span> <span class="pre">void</span> <span class="pre">*data,</span> <span class="pre">size_t</span> <span class="pre">len)</span></code><a class="headerlink" href="#int-flash-write-const-struct-device-dev-off-t-offset-void-data-size-t-len" title="永久链接至标题">¶</a></h4>
+<p>写Flash，写地址和长度要符合Flash驱动的对齐要求。</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+<li><p><strong>offset</strong> Flash内的偏移地址</p></li>
+<li><p><strong>data</strong> 存放写入数据的内存地址</p></li>
+<li><p><strong>len</strong> 要写入数据的长度</p></li>
+</ul>
+<p><strong>返回值</strong></p>
+<p>0表示成功，负值表示失败。</p>
+</section>
+<section id="int-int-flash-erase-const-struct-device-dev-off-t-offset-size-t-size">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">int</span> <span class="pre">flash_erase(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">off_t</span> <span class="pre">offset,</span> <span class="pre">size_t</span> <span class="pre">size)</span></code><a class="headerlink" href="#int-int-flash-erase-const-struct-device-dev-off-t-offset-size-t-size" title="永久链接至标题">¶</a></h4>
+<p>擦除Flash，擦除地址和长度按Flash硬件页大小对齐，当配置<code class="docutils literal notranslate"><span class="pre">CONFIG_FLASH_PAGE_LAYOUT=y</span></code>的情况下可以通过<code class="docutils literal notranslate"><span class="pre">flash_get_page_info_by_offs()</span></code>和<code class="docutils literal notranslate"><span class="pre">flash_get_page_info_by_idx()</span></code>获取页大小。</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+<li><p><strong>offset</strong> Flash内的偏移地址</p></li>
+<li><p><strong>len</strong> 要擦除的长度</p></li>
+</ul>
+<p><strong>返回值</strong></p>
+<p>0表示成功，负值表示失败。</p>
+</section>
+<section id="int-flash-get-page-info-by-offs-const-struct-device-dev-off-t-offset-struct-flash-pages-info-info">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">flash_get_page_info_by_offs(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">off_t</span> <span class="pre">offset,</span> <span class="pre">struct</span> <span class="pre">flash_pages_info</span> <span class="pre">*info)</span></code><a class="headerlink" href="#int-flash-get-page-info-by-offs-const-struct-device-dev-off-t-offset-struct-flash-pages-info-info" title="永久链接至标题">¶</a></h4>
+<p>获取指定偏移地址所在页的信息。</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+<li><p><strong>offset</strong> Flash内的偏移地址</p></li>
+<li><p><strong>info</strong> 页信息，<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_pages_info</span></code>,包括页的地址，大小和索引号</p></li>
+</ul>
+<p><strong>返回值</strong></p>
+<p>0表示成功，负值表示失败。</p>
+</section>
+<section id="int-flash-get-page-info-by-idx-const-struct-device-dev-uint32-t-page-index-struct-flash-pages-info-info">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">flash_get_page_info_by_idx(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">uint32_t</span> <span class="pre">page_index,</span> <span class="pre">struct</span> <span class="pre">flash_pages_info</span> <span class="pre">*info)</span></code><a class="headerlink" href="#int-flash-get-page-info-by-idx-const-struct-device-dev-uint32-t-page-index-struct-flash-pages-info-info" title="永久链接至标题">¶</a></h4>
+<p>获取指定索引号的页信息。</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+<li><p><strong>page_index</strong> Flash内的页索引号</p></li>
+<li><p><strong>info</strong> 页信息，<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_pages_info</span></code>,包括页的地址，大小和索引号</p></li>
+</ul>
+<p><strong>返回值</strong>
+0表示成功，负值表示失败。</p>
+</section>
+<section id="int-flash-get-page-count-const-struct-device-dev">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">flash_get_page_count(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev)</span></code><a class="headerlink" href="#int-flash-get-page-count-const-struct-device-dev" title="永久链接至标题">¶</a></h4>
+<p>获取Flash的页总数。</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+</ul>
+<p><strong>返回值</strong></p>
+<p>Flash的页总数</p>
+</section>
+<section id="void-flash-page-foreach-const-struct-device-dev-flash-page-cb-cb-void-data">
+<h4><code class="docutils literal notranslate"><span class="pre">void</span> <span class="pre">flash_page_foreach(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">flash_page_cb</span> <span class="pre">cb,</span> <span class="pre">void</span> <span class="pre">*data)</span></code><a class="headerlink" href="#void-flash-page-foreach-const-struct-device-dev-flash-page-cb-cb-void-data" title="永久链接至标题">¶</a></h4>
+<p>遍历Flash上所有的页面，从0开始每个页面执行一次cb，将页面的信息传递给cb</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+<li><p><strong>cb</strong> 页面信息处理回调</p></li>
+<li><p><strong>data</strong> 回调函数私有参数</p></li>
+</ul>
+</section>
+<section id="int-flash-sfdp-read-const-struct-device-dev-off-t-offset-void-data-size-t-len">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">flash_sfdp_read(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">off_t</span> <span class="pre">offset,</span> <span class="pre">void</span> <span class="pre">*data,</span> <span class="pre">size_t</span> <span class="pre">len)</span></code><a class="headerlink" href="#int-flash-sfdp-read-const-struct-device-dev-off-t-offset-void-data-size-t-len" title="永久链接至标题">¶</a></h4>
+<p>读取 JEDEC JESD216，标准的SFDP数据。该API在配置了<code class="docutils literal notranslate"><span class="pre">CONFIG_FLASH_JESD216_API=y</span></code>才有效</p>
+<p><strong>参数</strong></p>
+<ul class="simple">
+<li><p><strong>dev</strong> Flash设备</p></li>
+<li><p><strong>offset</strong> Flash上SFDP区内的偏移地址</p></li>
+<li><p><strong>data</strong> 存放读出数据的内存地址</p></li>
+<li><p><strong>len</strong> 要读出数据的长度</p></li>
+</ul>
+<p><strong>返回值</strong></p>
+<p>0表示成功，<code class="docutils literal notranslate"><span class="pre">-ENOTSUP</span></code>驱动不支持该功能，负值表示失败。</p>
+</section>
+<section id="int-flash-read-jedec-id-const-struct-device-dev-uint8-t-id">
+<h4><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">flash_read_jedec_id(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev,</span> <span class="pre">uint8_t</span> <span class="pre">*id)</span></code><a class="headerlink" href="#int-flash-read-jedec-id-const-struct-device-dev-uint8-t-id" title="永久链接至标题">¶</a></h4>
+<p>读取Flash的JEDEC ID。该API在配置了<code class="docutils literal notranslate"><span class="pre">CONFIG_FLASH_JESD216_API=y</span></code>才有效</p>
+<p><strong>参数</strong>
+* <strong>dev</strong> Flash设备
+* <strong>id</strong> 指向存储jedec id的内存，大小为3字节</p>
+<p><strong>返回值</strong></p>
+<p>0表示成功，<code class="docutils literal notranslate"><span class="pre">-ENOTSUP</span></code>驱动不支持该功能，负值表示失败。</p>
+</section>
+<section id="size-t-flash-get-write-block-size-const-struct-device-dev">
+<h4><code class="docutils literal notranslate"><span class="pre">size_t</span> <span class="pre">flash_get_write_block_size(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev)</span></code><a class="headerlink" href="#size-t-flash-get-write-block-size-const-struct-device-dev" title="永久链接至标题">¶</a></h4>
+<p>获取驱动支持的最小写单位大小，由于驱动写算法差异该值可能Flash本身硬件规定的不一致</p>
+<p><strong>参数</strong></p>
+<p><strong>dev</strong> Flash设备</p>
+<p><strong>返回值</strong></p>
+<p>单位写入块大小</p>
+</section>
+<section id="const-struct-flash-parameters-flash-get-parameters-const-struct-device-dev">
+<h4><code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">struct</span> <span class="pre">flash_parameters</span> <span class="pre">*flash_get_parameters(const</span> <span class="pre">struct</span> <span class="pre">device</span> <span class="pre">*dev)</span></code><a class="headerlink" href="#const-struct-flash-parameters-flash-get-parameters-const-struct-device-dev" title="永久链接至标题">¶</a></h4>
+<p>获取Flash参数，<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_parameters</span></code>中包含了写单位大小和被擦除后默认的值。
+<strong>参数</strong>
+* <strong>dev</strong> Flash设备</p>
+<p><strong>返回值</strong></p>
+<p>指向flash参数</p>
+</section>
+</section>
+</section>
+<section id="id5">
+<h2>驱动实现接口<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<p>和Zephyr其它驱动一样，flash驱动的实现者只需要将flash.h中规定好的API实现，并进行注册，就可以通过Flash接口进行访问。参考<a class="reference external" href="https://lgl88911.github.io/2018/08/03/Zephyr%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%9E%8B%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F/">Zephyr驱动模型实现方式</a>
+Flash的驱动实现接口定义在flash.h中，如下</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//读</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_read</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"></span>
+<span class="w">                  </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"></span>
+<span class="w">                  </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//写</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_write</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"></span>
+<span class="w">                   </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//擦除</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_erase</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"></span>
+<span class="w">                   </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//写保护控制</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_write_protection</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"></span>
+<span class="w">                      </span><span class="kt">bool</span><span class="w"> </span><span class="n">enable</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//获取参数</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_parameters</span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_get_parameters</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//获取page layout</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_pages_layout</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_pages_layout</span><span class="w"> </span><span class="o">**</span><span class="n">layout</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">layout_size</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//读取sfdp</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_sfdp_read</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"></span>
+<span class="w">                   </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">//读取jedec id</span>
+<span class="k">typedef</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flash_api_read_jedec_id</span><span class="p">)(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">id</span><span class="p">);</span><span class="w"></span>
+
+<span class="n">__subsystem</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_driver_api</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">flash_api_read</span><span class="w"> </span><span class="n">read</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">flash_api_write</span><span class="w"> </span><span class="n">write</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">flash_api_erase</span><span class="w"> </span><span class="n">erase</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">flash_api_write_protection</span><span class="w"> </span><span class="n">write_protection</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">flash_api_get_parameters</span><span class="w"> </span><span class="n">get_parameters</span><span class="p">;</span><span class="w"></span>
+<span class="cp">#if defined(CONFIG_FLASH_PAGE_LAYOUT)</span>
+<span class="w">    </span><span class="n">flash_api_pages_layout</span><span class="w"> </span><span class="n">page_layout</span><span class="p">;</span><span class="w"></span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_FLASH_PAGE_LAYOUT */</span><span class="cp"></span>
+<span class="cp">#if defined(CONFIG_FLASH_JESD216_API)</span>
+<span class="w">    </span><span class="n">flash_api_sfdp_read</span><span class="w"> </span><span class="n">sfdp_read</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">flash_api_read_jedec_id</span><span class="w"> </span><span class="n">read_jedec_id</span><span class="p">;</span><span class="w"></span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_FLASH_JESD216_API */</span><span class="cp"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<p>实现驱动时，完成以上函数指针原型的API，然后创建<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">flash_driver_api</span></code>变量，再通过<code class="docutils literal notranslate"><span class="pre">DEVICE_DT_INST_DEFINE</span></code>进行注册，就完成了Flash驱动的添加。</p>
+</section>
+<section id="id6">
+<h2>使用示例<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h2>
+<p>Zephyr中Flash的操作非常容易，简单示例如下</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">flash_dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">DT_CHOSEN_ZEPHYR_FLASH_CONTROLLER_LABEL</span><span class="p">);</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">flash_pages_info</span><span class="w"> </span><span class="n">info</span><span class="p">;</span><span class="w"></span>
+
+<span class="n">flash_get_page_info_by_offs</span><span class="p">(</span><span class="n">flash_dev</span><span class="p">,</span><span class="w"> </span><span class="n">page_addr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">info</span><span class="p">);</span><span class="w"></span>
+<span class="n">flash_erase</span><span class="p">(</span><span class="n">flash_dev</span><span class="p">,</span><span class="w"> </span><span class="n">page_addr</span><span class="p">,</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+<span class="n">flash_write</span><span class="p">(</span><span class="n">flash_dev</span><span class="p">,</span><span class="w"> </span><span class="n">page_addr</span><span class="p">,</span><span class="w"> </span><span class="n">buf_array</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">buf_array</span><span class="p">));</span><span class="w"></span>
+<span class="n">flash_read</span><span class="p">(</span><span class="n">flash_dev</span><span class="p">,</span><span class="w"> </span><span class="n">page_addr</span><span class="p">,</span><span class="w"> </span><span class="n">read_array</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">read_array</span><span class="p">));</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="jesd216">
+<h2>关于JESD216<a class="headerlink" href="#jesd216" title="永久链接至标题">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">flash_sfdp_read</span></code>读出的是原始的sfdp数据，需要使用jesd216.h中的API才能解析出串行Flash的Discoverable参数。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="驱动" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

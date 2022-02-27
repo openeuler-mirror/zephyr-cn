@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>使用vscode进行Zephyr应用开发 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/translations.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="搜索" href="../search.html" />
+    <link rel="next" title="如何贡献文档" href="write_doc.html" />
+    <link rel="prev" title="Windows下开发环境的搭建" href="windows.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">使用vscode进行Zephyr应用开发</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">背景</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">准备工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">代码浏览</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">编译与构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">代码提交</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">开发者参考</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>使用vscode进行Zephyr应用开发</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/develop/vscode.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div></div></blockquote>
+<section id="vscodezephyr">
+<span id="develop-vscode"></span><h1>使用vscode进行Zephyr应用开发<a class="headerlink" href="#vscodezephyr" title="永久链接至标题">¶</a></h1>
+<section id="id1">
+<h2>背景<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>许多使用者在进行Zephyr开发时，一大需求就是希望能够使用图形化的IDE进行开发，如像Keil、IAR、CodeWarrior、Eclipse。其实作为一个相对大型的嵌入式软件平台，Zephyr并没有与之完美
+配套的IDE，正如也很难找到与Linux内核开发配套的IDE一样。Zephyr社区中主流进行开发的方式是采用编辑器（vim, sublime)等编辑代码，再在命令行中通过一系列工具，如west、ninja, make
+进行编译、调试等。这种方式的优点是一旦熟练掌握后便十分灵活方便，但缺点是相应的学习曲线很长，需求熟悉掌握很多工具，而且有时命令行的效率确实不如图形化的方式，例如调试、浏览代码的场合。</p>
+<p>新一代编辑器vscode的快速发展以及其丰富的插件体系，使得采用类似IDE的方式进行zephyr开发成为可能，虽然不能解决所有问题，有时还需要结合命令行去完成部分工作，还是值得一试的。本章主要介绍
+如何使用vscode进行Zephyr应用开发，主要完成如下任务：</p>
+<ul class="simple">
+<li><p><strong>高效的代码浏览</strong></p></li>
+<li><p><strong>Zephyr应用的编译与构建</strong></p></li>
+<li><p><strong>Zephyr应用的调试</strong></p></li>
+<li><p><strong>Zephyr的代码提交（待完成）</strong></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">备注</p>
+<p>Zephyr构建系统的核心是**west+cmake+python工具**, 采用命令行可以完成所有的开发工作，IDE的图形化开发方式是建立在构建系统之上的“皮”， 皮可以换，可以是eclipse，也可以是vscode，
+但本体不会变化。</p>
+</div>
+</section>
+<section id="id2">
+<h2>准备工作<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>本章所描述的工作都是在Linux环境下实现，所使用的系统为Debian 11，相关内容经简单修改后同样适用于Windows环境。Windows下的Zephyr开发环境可以参见 <a class="reference internal" href="windows.html#develop-windows"><span class="std std-ref">Windows下开发环境的搭建</span></a>。</p>
+<p>首先需要下载并安装好vscode, 并推荐安装如下vscode扩展插件：</p>
+<table class="colwidths-given docutils align-default" id="id7">
+<caption><span class="caption-text">vscode插件列表</span><a class="headerlink" href="#id7" title="永久链接至表格">¶</a></caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>插件名</p></th>
+<th class="head"><p>用途</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>C/C++</p></td>
+<td><p>C/C++ IntelliSense, 调试与代码浏览</p></td>
+</tr>
+<tr class="row-odd"><td><p>CMake</p></td>
+<td><p>CMake语言支持</p></td>
+</tr>
+<tr class="row-even"><td><p>kconfig</p></td>
+<td><p>kconfig语言支持</p></td>
+</tr>
+<tr class="row-odd"><td><p>Arm Assembly</p></td>
+<td><p>arm汇编语言支持</p></td>
+</tr>
+<tr class="row-even"><td><p>nRF DeviceTree</p></td>
+<td><p>Zephyr DeviceTree支持</p></td>
+</tr>
+<tr class="row-odd"><td><p>Trailing Spaces</p></td>
+<td><p>高亮行尾部多余空格</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id3">
+<h2>代码浏览<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<ul class="simple">
+<li><p>vscode workspace布局
+建议采用vscode multi-root workspace的方式去布局相应文件结构，可参考如下结构：</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;vscode zephyr_workspace&gt;
+├── zephyr  zephyr-os代码
+├── modules zephyr modules（按需添加）
+├── app     自定义zephyr应用（如果采用Zephyr自带的例子可以不需要
+└── build   zephyr应用构建目录
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">备注</p>
+<p>为了避免zephyr的构建污染zephyr的git仓库，同时为了方便管理，建议把build目录单独存放</p>
+</div>
+<ul class="simple">
+<li><p>C/C++ IntelliSense配置</p></li>
+</ul>
+<p>vscode的C/C++ IntelliSense插件功能强大，但由于整个zephyr代码规模较大，IntelliSense的默认配置无法支撑，所以我们需要
+借助 <code class="file docutils literal notranslate"><span class="pre">compile_commands.json</span></code> 使得C/C++ IntelliSense能够准确找到相关代码。</p>
+<p>由于Zephyr的构建系统是基于CMake的，每次CMake配置之后会生成 <code class="file docutils literal notranslate"><span class="pre">compile_commands.json</span></code>，里面包含了本次构建所涉及的文件、编
+译器选项。需要注意的的是 <code class="file docutils literal notranslate"><span class="pre">compile_commands.json</span></code> 只包含了本次构建相关内容，不相关文件不会包含在里面，因此vscode的C/C++
+IntelliSense只会覆盖相关文件，例如如果构建过程中没使用网络相关功能，那么 <code class="file docutils literal notranslate"><span class="pre">subsys/net</span></code> 下的代码则不会被搜索。</p>
+<p>在整个vscode workspace层级（注意不是folder层级）设置C/C++ IntelliSense的 <strong>compileCommands</strong> 属性正确指
+向 <code class="file docutils literal notranslate"><span class="pre">compile_commands.json</span></code> 即可生效。具体的vscode workspace参考配置如下：</p>
+<blockquote>
+<div><p><a class="reference external" href="https://gitee.com/openeuler/zephyr-cn/blob/master/vscode/zephyr.code-workspace">zephyr vscode workspace参考配置</a></p>
+</div></blockquote>
+<p>由于必须先配置CMake后才会有 <code class="file docutils literal notranslate"><span class="pre">compile_commands.json</span></code>，因此需要在build下通过如下方式生成：</p>
+<ul>
+<li><p>在build目录下，通过命令行生成：</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cmake -DBOARD<span class="o">=</span>&lt;target board&gt;  &lt;path-to-zephyr-application&gt;
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>或者通过，运行 <strong>编译与构建</strong> 章节中所定义的 <strong>Zephyr 配置</strong> 任务进行</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2>编译与构建<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>Zephyr的编译和构建核心是构建在命令行之上的，要实现vscode和Zephyr构建系统的对接，需要使用vscode的 <strong>task</strong> 机制，即为
+vscode配置一系列Zephyr相关的task。由于这些task是和构建相关，因此相关实现放在 :file：<cite>build/.vscode/tasks.json</cite> 中，
+参考实现如下：</p>
+<blockquote>
+<div><p><a class="reference external" href="https://gitee.com/openeuler/zephyr-cn/blob/master/vscode/.vscode/tasks.json">zephyr vscode tasks参考配置</a></p>
+</div></blockquote>
+<p>有了如上一系列tasks配置之后，就可以在vscode的 <strong>Run Task</strong> 中选择相应的zephyr任务，如构建，menuconfig, clean等。</p>
+</section>
+<section id="id5">
+<h2>调试<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<p>Zephyr默认的调试界面的是gdb, 要实现vscode和Zephyr调试界面的对接，需要使用vscode的 <strong>lanuch</strong> 机制，即为
+vscode配置一系列Zephyr相关的run。由于这些task是和构建相关，因此相关实现放在 :file：<cite>build/.vscode/launch.json</cite> 中，
+参考实现如下：</p>
+<blockquote>
+<div><p><a class="reference external" href="https://gitee.com/openeuler/zephyr-cn/blob/master/vscode/.vscode/launch.json">zephyr vscode lauch参考配置</a></p>
+</div></blockquote>
+<p>有了如上一系列launch配置之后，就可以在vscode中唤起gdb,并通过图形化的方式进行调试，包括单步运行、断点、查看变量等等。</p>
+</section>
+<section id="id6">
+<h2>代码提交<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h2>
+<p>参与Zephyr社区的代码提交，核心是掌握git相关技巧。当前还是建议通过命令行的方式进行git操作。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="windows.html" class="btn btn-neutral float-left" title="Windows下开发环境的搭建" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="write_doc.html" class="btn btn-neutral float-right" title="如何贡献文档" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

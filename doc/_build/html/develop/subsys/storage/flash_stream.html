@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zephyr flash流式操作 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../search.html" />
+    <link rel="next" title="Zephyr NVS模块使用说明" href="nvs.html" />
+    <link rel="prev" title="Zephyr Flash Map实现分析" href="flash_map.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">子系统</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="flash_map.html">Zephyr Flash Map实现分析</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Zephyr flash流式操作</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">概述</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#api">API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">实现分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="nvs.html">Zephyr NVS模块使用说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvs_analyze.html">Zephyr NVS原理分析</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../driver/index.html">驱动</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">开发者参考</a> &raquo;</li>
+          <li><a href="../index.html">子系统</a> &raquo;</li>
+      <li>Zephyr flash流式操作</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/develop/subsys/storage/flash_stream.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zephyr-flash">
+<span id="storage-flash-stream"></span><h1>Zephyr flash流式操作<a class="headerlink" href="#zephyr-flash" title="永久链接至标题">¶</a></h1>
+<p>本文分析Zephyr的flash流式操作如何实现。</p>
+<section id="id1">
+<h2>概述<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>Flash在写入前必须擦除，擦除有page的限制，写入根据设备的不同可能会有对齐的限制。由于其操作的特殊性Flash无法直接接受流式数据的写入(连续的大小不定的数据)，为应对该情况Zephyr对flash驱动进行了封装提供stream_flash，用于支持流式数据的写入。
+stream_flash模块的特性如下：</p>
+<ul class="simple">
+<li><p>提供缓存，将流式数据收集到指定量后再写入到Flash</p></li>
+<li><p>支持缓存回读</p></li>
+<li><p>支持断电恢复机制</p></li>
+</ul>
+<p>stream_flash最典型的应用就是DFU升级，在Zephyr中DFU升级和coredump写入flash都使用了stream_flash。</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="永久链接至标题">¶</a></h2>
+<section id="id2">
+<h3>API说明<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h3>
+<p>flash_stream的API声明在<code class="docutils literal notranslate"><span class="pre">include/storage/stream_flash.h</span></code>中，这里做注释说明</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 初始化flash_stream.</span>
+<span class="cm">*</span>
+<span class="cm">* @param ctx flash_stream的上下文，相关的管理数据都保存在其中</span>
+<span class="cm">* @param fdev flash_stream使用的flash设备，流式数据将写入该设备</span>
+<span class="cm">* @param buf flash_stream使用的缓存，写入的流式数据将先保存到该缓存</span>
+<span class="cm">* @param buf_len 缓存大小，不能大于flash page尺寸，并按照flash的最小可写单位write-block-size对齐。</span>
+<span class="cm">* @param offset flash设备中的偏移地址</span>
+<span class="cm">* @param size 最大可写入量。当设置为0时表示可以从offset开始一直写到flash末尾</span>
+<span class="cm">* @param cb 每次flash写操作完成后就会调用这个回调</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0为成功，负数为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_init</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">fdev</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">buf_len</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">stream_flash_callback_t</span><span class="w"> </span><span class="n">cb</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief  写入数据到flash stream</span>
+<span class="cm">*</span>
+<span class="cm">* @param ctx flash_stream的上下文</span>
+<span class="cm">* @param data 写入数据指针</span>
+<span class="cm">* @param len 写入数据长度</span>
+<span class="cm">* @param flush 最后一笔写入时使用true强制写入到flash内，当为false时只有在stream_flash满时才会写flash</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0为成功，负数为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_buffered_write</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">flush</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 获取目前有多少数据被写入到flash.</span>
+<span class="cm">*</span>
+<span class="cm">* @param ctx flash_stream的上下文</span>
+<span class="cm">*</span>
+<span class="cm">* @return 已写入到flash的数据长度.</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">size_t</span><span class="w"> </span><span class="nf">stream_flash_bytes_written</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>在配置`CONFIG_STREAM_FLASH_ERASE=y`的情况下提供擦除API</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 擦除flash页</span>
+<span class="cm">*</span>
+<span class="cm">* @param ctx flash_stream的上下文</span>
+<span class="cm">* @param off 擦除off所在页面</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0为成功，负数为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_erase_page</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">off</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>在配置`CONFIG_STREAM_FLASH_PROGRESS=y`的情况下提供恢复机制API</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 加载上一次保存的写入进度到flash_stream上下文中</span>
+<span class="cm">*</span>
+<span class="cm">* @param ctx flash_stream的上下文</span>
+<span class="cm">* @param settings_key setting模块中标识进度的key</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0为成功，负数为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_progress_load</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">settings_key</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 保存当前flash_stream的写进度 .</span>
+<span class="cm">*</span>
+<span class="cm">* @param ctx flash_stream的上下文</span>
+<span class="cm">* @param settings_key setting模块中标识进度的key</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0为成功，负数为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_progress_save</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">settings_key</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 清除flash_stream保存的进度.</span>
+<span class="cm">*</span>
+<span class="cm">* @param ctx flash_stream的上下文</span>
+<span class="cm">* @param settings_key setting模块中标识进度的key</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0为成功，负数为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_progress_clear</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">settings_key</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>使用示例<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h3>
+<p>这里做简单的使用示例如下注释，当不需要做断电恢复时，移除<code class="docutils literal notranslate"><span class="pre">stream_flash_progress_xxx</span></code>相关流程即可</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define STREAM_FLASH_KEY    &quot;prop/stream_flash_key&quot;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="n">stream_flash</span><span class="p">;</span><span class="w"></span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">data_verify</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">offset</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//校验回读数据</span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//通知显示当前下载进度last_writed</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">last_writed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream_flash_bytes_written</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="p">....</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//保存当前下载进度</span>
+<span class="w">    </span><span class="n">stream_flash_progress_save</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream_flash</span><span class="p">,</span><span class="w"> </span><span class="n">STREAM_FLASH_KEY</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//返回0表示校验通过</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">download_task</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">fdev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">FLASH_NAME</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">uint_t</span><span class="w"> </span><span class="n">buf</span><span class="p">[</span><span class="mi">64</span><span class="o">*</span><span class="mi">1024</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//设用FLASH_NAME设备</span>
+<span class="w">    </span><span class="c1">//缓存为buf，大小为64K</span>
+<span class="w">    </span><span class="c1">//stream_flash，位于flash的0x100000处，大小为3M</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">stream_flash_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream_flash</span><span class="p">,</span><span class="w"> </span><span class="n">fdev</span><span class="p">,</span><span class="w"></span>
+<span class="w">                            </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">),</span><span class="w"> </span><span class="mh">0x100000</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">,</span><span class="w"></span>
+<span class="w">                            </span><span class="n">data_verify</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//加载上次位置</span>
+<span class="w">    </span><span class="n">stream_flash_progress_load</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream_flash</span><span class="p">,</span><span class="w"> </span><span class="n">STREAM_FLASH_KEY</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//读取上次写入的位置，通知从该处下载数据</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">last_writed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream_flash_bytes_written</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="p">....</span><span class="w"> </span><span class="n">nodify</span><span class="p">(</span><span class="n">last_writed</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">){</span><span class="w"></span>
+<span class="w">        </span><span class="n">uint8</span><span class="w"> </span><span class="n">rev_buf</span><span class="p">[</span><span class="mi">32</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">rev_len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="c1">//接收数据</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">finish</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">revice</span><span class="p">(</span><span class="n">rev_buf</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rev_len</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">finish</span><span class="p">){</span><span class="w"></span>
+<span class="w">            </span><span class="c1">//下载完所有数据成做flush写</span>
+<span class="w">            </span><span class="n">stream_flash_buffered_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream_flash</span><span class="p">,</span><span class="w"> </span><span class="n">rev_buf</span><span class="p">,</span><span class="w"> </span><span class="n">rev_len</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="c1">//清除下载进度，退出下载</span>
+<span class="w">            </span><span class="n">stream_flash_progress_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream_flash</span><span class="p">,</span><span class="w"> </span><span class="n">STREAM_FLASH_KEY</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="k">else</span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="c1">//写入当前下载数据，继续下载</span>
+<span class="w">            </span><span class="n">stream_flash_buffered_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream_flash</span><span class="p">,</span><span class="w"> </span><span class="n">rev_buf</span><span class="p">,</span><span class="w"> </span><span class="n">rev_len</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id4">
+<h2>实现分析<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>stream flash实现的核心就是将数据缓存到buffer中，当buffer满后一次性写入到flash。通过<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">stream_flash_ctx</span></code>进行管理</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">;</span><span class="w"> </span><span class="c1">//写缓存，写入数据时先保存在该buffer中</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">buf_len</span><span class="p">;</span><span class="w"> </span><span class="c1">//写缓存的长度</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">buf_bytes</span><span class="p">;</span><span class="w"> </span><span class="c1">//写缓存中有效数据的长度</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">fdev</span><span class="p">;</span><span class="w"> </span><span class="c1">//stream_flash操控的flash device，数据实际要被写入到该flash设备上</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes_written</span><span class="p">;</span><span class="w"> </span><span class="c1">//总计写了多少数据到flash</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">offset</span><span class="p">;</span><span class="w"> </span><span class="c1">//stream_flash从flash内该偏移地址开始使用</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">available</span><span class="p">;</span><span class="w"> </span><span class="c1">//flash内还剩多少区域可以被stream_flash使用</span>
+<span class="w">    </span><span class="n">stream_flash_callback_t</span><span class="w"> </span><span class="n">callback</span><span class="p">;</span><span class="w"> </span><span class="c1">//每写一次flash，调用一次该callback</span>
+<span class="cp">#ifdef CONFIG_STREAM_FLASH_ERASE</span>
+<span class="w">    </span><span class="kt">off_t</span><span class="w"> </span><span class="n">last_erased_page_start_offset</span><span class="p">;</span><span class="w"> </span><span class="c1">//上一次擦除flash page所在的地址</span>
+<span class="cp">#endif</span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<p>各字段图示如下，后面的分析可以参考该图进行理解</p>
+<img alt="../../../_images/stream_flash.png" src="../../../_images/stream_flash.png" />
+<section id="id5">
+<h3>初始化<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h3>
+<p>stream flash初始化主要完成：对setting系统的初始化用于存储下载进度，完成对<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">stream_flash_ctx</span></code>的初始化赋值。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_init</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">fdev</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">buf_len</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">stream_flash_callback_t</span><span class="w"> </span><span class="n">cb</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ctx</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">fdev</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">buf</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="c1">//初始化setting子系统，为存储下载进度做准备</span>
+<span class="cp">#ifdef CONFIG_STREAM_FLASH_PROGRESS</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings_subsys_init</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Error %d initializing settings subsystem&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">_inspect_flash</span><span class="w"> </span><span class="n">inspect_flash_ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">buf_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf_len</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">total_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">    </span><span class="p">};</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//缓存的长度必须与write-block-size对齐</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">buf_len</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">flash_get_write_block_size</span><span class="p">(</span><span class="n">fdev</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Buffer size is not aligned to minimal write-block-size&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//遍历flash的页，计算flash的大小</span>
+<span class="w">    </span><span class="n">flash_page_foreach</span><span class="p">(</span><span class="n">fdev</span><span class="p">,</span><span class="w"> </span><span class="n">find_flash_total_size</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">inspect_flash_ctx</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* The flash size counted should never be equal zero */</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">inspect_flash_ctx</span><span class="p">.</span><span class="n">total_size</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//检查stream_flash使用的范围是否在flash内</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">offset</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">inspect_flash_ctx</span><span class="p">.</span><span class="n">total_size</span><span class="w"> </span><span class="o">||</span><span class="w"></span>
+<span class="w">        </span><span class="n">offset</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">flash_get_write_block_size</span><span class="p">(</span><span class="n">fdev</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Incorrect parameter&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//初始化flash_stream管理上下文</span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdev</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf_len</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0U</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//计算flash_stream实际可使用的flash空间，size为0时，就是从offset开始到flash结束的长度</span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">available</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">inspect_flash_ctx</span><span class="p">.</span><span class="n">total_size</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">offset</span><span class="w"> </span><span class="o">:</span><span class="w"></span>
+<span class="w">                    </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cb</span><span class="p">;</span><span class="w"></span>
+
+<span class="cp">#ifdef CONFIG_STREAM_FLASH_ERASE</span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">last_erased_page_start_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>写入<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_buffered_write</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">flush</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">processed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">buf_empty_bytes</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//计算flash内剩余的空间是否能容纳还没写入的数据总长度</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">available</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//写入flash_stream数据比缓存空间大时，先将缓存空间填满，再写入到flash</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">((</span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">processed</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">buf_empty_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">//填满缓存空间</span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">processed</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">buf_empty_bytes</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//将缓存空间数据写到flash</span>
+<span class="w">        </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_sync</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">processed</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">buf_empty_bytes</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//剩余的数据不足以填满缓存空间的，就保留在缓存空间</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">processed</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">data</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">processed</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">processed</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">processed</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//如果指定flush，无论缓存空间剩多少都一次性写入到flash中</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">flush</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_sync</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>flash写入流程，由于缓存的大小小于页，因此写入可以直接以页来操作</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">flash_sync</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//计算flash内写入地址</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">write_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">offset</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">buf_bytes_aligned</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">fill_length</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">filler</span><span class="p">;</span><span class="w"></span>
+
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//擦除页，页所在位置由写入数据最后一byte位置计算而得</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">IS_ENABLED</span><span class="p">(</span><span class="n">CONFIG_STREAM_FLASH_ERASE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream_flash_erase_page</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"></span>
+<span class="w">                        </span><span class="n">write_addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;stream_flash_erase_page err %d offset=0x%08zx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">rc</span><span class="p">,</span><span class="w"> </span><span class="n">write_addr</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//写入的数据不能和write-block-size对齐时，未对齐部分填入擦除flash后的值，通常时0xff</span>
+<span class="w">    </span><span class="c1">//该操作只会在最后一笔数据flush发生</span>
+<span class="w">    </span><span class="n">fill_length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_get_write_block_size</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">fill_length</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">fill_length</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">fill_length</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">filler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_get_parameters</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">erase_value</span><span class="p">;</span><span class="w">      </span><span class="c1">//获取擦除flash后的值，通常是0xff</span>
+
+<span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">,</span><span class="w"> </span><span class="n">filler</span><span class="p">,</span><span class="w"> </span><span class="n">fill_length</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">fill_length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//写入flash</span>
+<span class="w">    </span><span class="n">buf_bytes_aligned</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">fill_length</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_write</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="p">,</span><span class="w"> </span><span class="n">write_addr</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">buf_bytes_aligned</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;flash_write error %d offset=0x%08zx&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">write_addr</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/* Invert to ensure that caller is able to discover a faulty</span>
+<span class="cm">        * flash_read() even if no error code is returned.</span>
+<span class="cm">        */</span><span class="w"></span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_read</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="p">,</span><span class="w"> </span><span class="n">write_addr</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;flash read failed: %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">callback</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">,</span><span class="w"> </span><span class="n">write_addr</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;callback failed: %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">buf_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0U</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>上面你可能会发现，无论缓存是多大，即使小于一个page都会被执行<code class="docutils literal notranslate"><span class="pre">stream_flash_erase_page</span></code>，这会不会导致前面写入在同一页得数据被擦除呢? 我们来看一下其实现</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_erase_page</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="kt">off_t</span><span class="w"> </span><span class="n">off</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_pages_info</span><span class="w"> </span><span class="n">page</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//找到要擦除的页</span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_get_page_info_by_offs</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="p">,</span><span class="w"> </span><span class="n">off</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">page</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Error %d while getting page info&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//如果该页的地址和上一次擦除的一致，就不再执行擦除，从而避免丢失</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">last_erased_page_start_offset</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">page</span><span class="p">.</span><span class="n">start_offset</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">LOG_DBG</span><span class="p">(</span><span class="s">&quot;Erasing page at offset 0x%08lx&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">page</span><span class="p">.</span><span class="n">start_offset</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//执行擦除</span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_erase</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="p">,</span><span class="w"> </span><span class="n">page</span><span class="p">.</span><span class="n">start_offset</span><span class="p">,</span><span class="w"> </span><span class="n">page</span><span class="p">.</span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Error %d while erasing page&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">//更新上一次擦除地址</span>
+<span class="w">        </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">last_erased_page_start_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">page</span><span class="p">.</span><span class="n">start_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3>恢复机制实现<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h3>
+<p>恢复机制使用setting模块存储和改写<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">stream_flash_ctx</span></code>中的<code class="docutils literal notranslate"><span class="pre">bytes_written</span></code>字段完成，setting是一个可读写模块后端可以对接nvs或者文件等，这里不做展开说明，只用指定setting以key+value的map形式保存即可。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_progress_save</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">settings_key</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ctx</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">settings_key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//将bytes_written写入到setting中</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings_save_one</span><span class="p">(</span><span class="n">settings_key</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="o">&amp;</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">sizeof</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Error %d while storing progress for </span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">rc</span><span class="p">,</span><span class="w"> </span><span class="n">settings_key</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_progress_load</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">settings_key</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ctx</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">settings_key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//在回调settings_direct_loader中对cts中的bytes_written进行更新</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings_load_subtree_direct</span><span class="p">(</span><span class="n">settings_key</span><span class="p">,</span><span class="w"></span>
+<span class="w">                        </span><span class="n">settings_direct_loader</span><span class="p">,</span><span class="w"></span>
+<span class="w">                        </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">ctx</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Error %d while loading progress for </span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">rc</span><span class="p">,</span><span class="w"> </span><span class="n">settings_key</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">settings_direct_loader</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">settings_read_cb</span><span class="w"> </span><span class="n">read_cb</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">cb_arg</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">param</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">//查找满足条件的key</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">settings_name_next</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes_written</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//通过setting的callback和key读出bytes_written</span>
+<span class="w">        </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read_cb</span><span class="p">(</span><span class="n">cb_arg</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bytes_written</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="k">sizeof</span><span class="p">(</span><span class="n">bytes_written</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//判断读出的长度是否合法</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">len</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Unable to read bytes_written from storage&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//更新ctx中的bytes_written</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytes_written</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bytes_written</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">LOG_WRN</span><span class="p">(</span><span class="s">&quot;Loaded outdated bytes_written %zu &lt; %zu&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">bytes_written</span><span class="p">,</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//更新last_erased_page_start_offset</span>
+<span class="cp">#ifdef CONFIG_STREAM_FLASH_ERASE</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">flash_pages_info</span><span class="w"> </span><span class="n">page</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">off_t</span><span class="w"> </span><span class="n">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">off_t</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">offset</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/* Update the last erased page to avoid deleting already</span>
+<span class="cm">        * written data.</span>
+<span class="cm">        */</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">bytes_written</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash_get_page_info_by_offs</span><span class="p">(</span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">fdev</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="p">,</span><span class="w"></span>
+<span class="w">                            </span><span class="o">&amp;</span><span class="n">page</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Error %d while getting page info&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">last_erased_page_start_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">page</span><span class="p">.</span><span class="n">start_offset</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">ctx</span><span class="o">-&gt;</span><span class="n">last_erased_page_start_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_STREAM_FLASH_ERASE */</span><span class="cp"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">stream_flash_progress_clear</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stream_flash_ctx</span><span class="w"> </span><span class="o">*</span><span class="n">ctx</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">settings_key</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ctx</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">settings_key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">EFAULT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//删除存储的进度</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings_delete</span><span class="p">(</span><span class="n">settings_key</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_ERR</span><span class="p">(</span><span class="s">&quot;Error %d while deleting progress for </span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">rc</span><span class="p">,</span><span class="w"> </span><span class="n">settings_key</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">rc</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h2>参考<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/storage/stream/stream_flash.html">https://docs.zephyrproject.org/latest/reference/storage/stream/stream_flash.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="flash_map.html" class="btn btn-neutral float-left" title="Zephyr Flash Map实现分析" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="nvs.html" class="btn btn-neutral float-right" title="Zephyr NVS模块使用说明" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

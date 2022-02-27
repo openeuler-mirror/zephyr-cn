@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zephyr NVS模块使用说明 &mdash; Zephyr-CN 0.0.1 文档</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../search.html" />
+    <link rel="next" title="Zephyr NVS原理分析" href="nvs_analyze.html" />
+    <link rel="prev" title="Zephyr flash流式操作" href="flash_stream.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Zephyr-CN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">内容:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction/overview.html">面向物联网时代的新一代嵌入式软件平台Zephyr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../windows.html">Windows下开发环境的搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vscode.html">使用vscode进行Zephyr应用开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../write_doc.html">如何贡献文档</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">开发者参考</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">子系统</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="flash_map.html">Zephyr Flash Map实现分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flash_stream.html">Zephyr flash流式操作</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Zephyr NVS模块使用说明</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">接口</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">使用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="nvs_analyze.html">Zephyr NVS原理分析</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../driver/index.html">驱动</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Zephyr-CN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">开发者参考</a> &raquo;</li>
+          <li><a href="../index.html">子系统</a> &raquo;</li>
+      <li>Zephyr NVS模块使用说明</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/develop/subsys/storage/nvs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zephyr-nvs">
+<span id="storage-nvs"></span><h1>Zephyr NVS模块使用说明<a class="headerlink" href="#zephyr-nvs" title="永久链接至标题">¶</a></h1>
+<p>NVS是非易失性存储的简写, 而Zephyr中的NVS单只是对Flash功能进行包装，并提供一个“识别号-数据”对的访问接口，用于存储系统中经常改变的数据。例如播放器的音量，当前的环境噪声，设备重启的次数。我们知道在Flash上写入数据是需要先擦除，而Flash的擦除次数是有限制的，引入NVS的目的是通过Flash的空间换取Flash不被频繁的擦除，并均衡使用Flash的磨损。</p>
+<p>Zephyr的NVS基本构成如下：</p>
+<p>NVS以扇区(sector)为单位管理Flash，一个扇区包含一个或以上的Flash页，扇区必须按照Flash的页大小对齐。NVS至少要2个扇区，NVS永远维持一个空扇区做记录回收用，NVS写入记录的数据小于一个扇区。</p>
+<p>NVS数据以记录为单位，一条记录就是一个id-data对。在NVS中以唯一id来标识记录。id的长度为16bit，最大0xFFFF被作为特殊用途，也就是说NVS可以存储的数据条目不能超过65535条。</p>
+<p>NVS写入记录时不会擦除原来的记录，而是先检查NVS上已有记录，如果有相同的id-data对就不进行写入，如果没有则进行写入。所以NVS内可能会存在多条id相同的记录。</p>
+<p>NVS读出记录时，会读出指定id最近的一条写入记录。</p>
+<section id="id1">
+<h2>接口<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>基于<code class="docutils literal notranslate"><span class="pre">include/fs/nvs.h</span></code>进行注释分析</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief nvs_init</span>
+<span class="cm">*</span>
+<span class="cm">* 在Flash上初始化NVS文件系统.</span>
+<span class="cm">*</span>
+<span class="cm">* @param fs 指向nvs</span>
+<span class="cm">* @param dev_name Flash设备名</span>
+<span class="cm">* @retval 0 表示成功</span>
+<span class="cm">* @retval 负数为失败返回的errno</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">nvs_init</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="o">*</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">dev_name</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief nvs_clear</span>
+<span class="cm">*</span>
+<span class="cm">* 清除NVS文件系统</span>
+<span class="cm">* @param fs 指向nvs</span>
+<span class="cm">* @retval 0 表示成功</span>
+<span class="cm">* @retval 负数为失败返回的errno</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">nvs_clear</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="o">*</span><span class="n">fs</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief nvs_write</span>
+<span class="cm">*</span>
+<span class="cm">* 向nvs写入一条记录.</span>
+<span class="cm">*</span>
+<span class="cm">* @param fs 指向nvs</span>
+<span class="cm">* @param id 记录的ID</span>
+<span class="cm">* @param data 要被写入记录的数据</span>
+<span class="cm">* @param len 被写入的长度</span>
+<span class="cm">* @return 返回实际的写入数据长度，应该和len相等，当返回0时表示找到相同的id-data，无需再次写入。负数为失败返回的errno。</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">ssize_t</span><span class="w"> </span><span class="nf">nvs_write</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="o">*</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief nvs_delete</span>
+<span class="cm">*</span>
+<span class="cm">* 从nvs中删除一条记录</span>
+<span class="cm">*</span>
+<span class="cm">* @param fs 指向nvs</span>
+<span class="cm">* @param id 删除记录的ID</span>
+<span class="cm">* @retval 0 表示成功</span>
+<span class="cm">* @retval 负数为失败返回的errno</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">nvs_delete</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="o">*</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">id</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief nvs_read</span>
+<span class="cm">*</span>
+<span class="cm">* 从nvs中读出一条记录.</span>
+<span class="cm">*</span>
+<span class="cm">* @param fs 指向nvs</span>
+<span class="cm">* @param id 要读出记录的ID</span>
+<span class="cm">* @param data 被读出的数据</span>
+<span class="cm">* @param len 读出数据的长度</span>
+<span class="cm">*</span>
+<span class="cm">* @return 返回实际的读出数据长度，应该和len想等。当返回值大于len时表示该条记录还有数据没有读完。负数为失败返回的errno。</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">ssize_t</span><span class="w"> </span><span class="nf">nvs_read</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="o">*</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief nvs_read_hist</span>
+<span class="cm">*</span>
+<span class="cm">* 读NVS内的历史记录</span>
+<span class="cm">*</span>
+<span class="cm">* @param fs 指向nvs</span>
+<span class="cm">* @param id 要读出记录的ID</span>
+<span class="cm">* @param data 被读出的数据</span>
+<span class="cm">* @param len 读出数据的长度</span>
+<span class="cm">* @param cnt 历史计数器，0表示最近的一个</span>
+<span class="cm">*</span>
+<span class="cm">* @return 返回实际的读出数据长度，应该和len想等。当返回值大于len时表示该条记录还有数据没有读完。负数为失败返回的errno。</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">ssize_t</span><span class="w"> </span><span class="nf">nvs_read_hist</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="o">*</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">cnt</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief nvs_calc_free_space</span>
+<span class="cm">*</span>
+<span class="cm">* 计算NVS剩余可用空间.</span>
+<span class="cm">*</span>
+<span class="cm">* @param fs 指向nvs</span>
+<span class="cm">*</span>
+<span class="cm">* @return 返回NVS上可用空间的大小.如果返回负数则为错误的errno</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">ssize_t</span><span class="w"> </span><span class="nf">nvs_calc_free_space</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="o">*</span><span class="n">fs</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h2>使用<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>默认情况下NVS是被禁用的，通过下面配置项可以启用NVS</p>
+<div class="highlight-kconfig notranslate"><div class="highlight"><pre><span></span><span class="c1"># 启用NVS</span>
+CONFIG_NVS=y<span class="w"></span>
+
+<span class="c1"># NVS依赖Flash，需要启用Flash驱动</span>
+CONFIG_FLASH=y<span class="w"></span>
+CONFIG_FLASH_PAGE_LAYOUT=y<span class="w"></span>
+
+<span class="c1"># 当使用的flash地址空间被MPU保护时，需要配置允许对应地址空间被写入</span>
+CONFIG_MPU_ALLOW_FLASH_WRITE=y<span class="w"></span>
+</pre></div>
+</div>
+<p>以下示例代码展示了如何使用nvs记录系统启动的次数和检查系统是否正常关机。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define REBOOT_COUNT_ID 0</span>
+<span class="cp">#define POWER_NORMAL_ID 1</span>
+<span class="cp">#define FLASH_LABLE &quot;FLASH_ESP32C3&quot;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">nvs_fs</span><span class="w"> </span><span class="n">fs</span><span class="p">;</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">flash_pages_info</span><span class="w"> </span><span class="n">info</span><span class="p">;</span><span class="w"></span>
+<span class="kt">uint16_t</span><span class="w"> </span><span class="n">reboot_cnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="kt">bool</span><span class="w"> </span><span class="n">power_normal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">device</span><span class="w"> </span><span class="o">*</span><span class="n">flash_dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device_get_binding</span><span class="p">(</span><span class="n">FLASH_LABLE</span><span class="p">);</span><span class="w"></span>
+
+<span class="n">flash_get_page_info_by_offs</span><span class="p">(</span><span class="n">flash_dev</span><span class="p">,</span><span class="w"> </span><span class="n">fs</span><span class="p">.</span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">info</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// nvs放到flash的0x250000处，每个扇区使用一个flash页面，nvs总计3个扇区</span>
+<span class="n">fs</span><span class="p">.</span><span class="n">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x250000</span><span class="w"></span>
+<span class="n">fs</span><span class="p">.</span><span class="n">sector_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">size</span><span class="p">;</span><span class="w"></span>
+<span class="n">fs</span><span class="p">.</span><span class="n">sector_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3U</span><span class="p">;</span><span class="w"></span>
+
+<span class="c1">// 初始化nvs</span>
+<span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nvs_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">FLASH_LABLE</span><span class="p">);</span><span class="w"></span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">printk</span><span class="p">(</span><span class="s">&quot;Flash Init failed</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// 读出上一次reboot count，如果存在做一次加1</span>
+<span class="n">rc</span><span class="o">=</span><span class="w"> </span><span class="n">nvs_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">REBOOT_COUNT_ID</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">reboot_cnt</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">reboot_cnt</span><span class="p">));</span><span class="w"></span>
+<span class="k">if</span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">reboot_cnt</span><span class="p">)){</span><span class="w"></span>
+<span class="w">    </span><span class="n">reboot_cnt</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="k">else</span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">reboot_cnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// 更新重启的次数</span>
+<span class="n">nvs_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">REBOOT_COUNT_ID</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">reboot_cnt</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">reboot_cnt</span><span class="p">));</span><span class="w"></span>
+
+<span class="c1">//读出关机记录</span>
+<span class="n">rc</span><span class="o">=</span><span class="w"> </span><span class="n">nvs_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">POWER_NORMAL_ID</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">power_normal</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">power_normal</span><span class="p">));</span><span class="w"></span>
+<span class="k">if</span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">power_normal</span><span class="p">)){</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//删除关机记录</span>
+<span class="w">    </span><span class="n">nvs_delete</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">POWER_NORMAL_ID</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">power_normal</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">){</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// 正常关机处理</span>
+<span class="p">}</span><span class="k">else</span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// 异常关机处理</span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// 处理</span>
+<span class="k">switch</span><span class="p">(</span><span class="n">status</span><span class="p">){</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">DO_SOMTING</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">POWER_OFF</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//关机流程，写入正常关机标记</span>
+<span class="w">    </span><span class="n">nvs_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">POWER_NORMAL_ID</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">power_normal</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">power_normal</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//进行关机处理</span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">NVS_FORMAT</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//清除NVS文件系统</span>
+<span class="w">    </span><span class="n">nvs_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fs</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">default</span><span class="o">:</span><span class="w"></span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>参考<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p><a class="reference external" href="https://docs.zephyrproject.org/latest/reference/storage/nvs/nvs.html">https://docs.zephyrproject.org/latest/reference/storage/nvs/nvs.html</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="flash_stream.html" class="btn btn-neutral float-left" title="Zephyr flash流式操作" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="nvs_analyze.html" class="btn btn-neutral float-right" title="Zephyr NVS原理分析" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2021, SIG-Zephyr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
