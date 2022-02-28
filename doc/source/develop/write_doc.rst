@@ -3,8 +3,8 @@
 如何贡献文档
 ###############
 
-SIG Zephyr与Zephyr Project一样采用了Sphinx来构建文档，生成html静态面并托管在gitee pages上。
-本章主要简述如果通过Sphinx贡献文档。
+SIG Zephyr与Zephyr Project一样采用了Sphinx来来构建文档，生成html静态面，并最终托管在gitee pages上。
+本章主要简述如何通过Sphinx撰写文档并贡献给SIG Zephyr。
 
 关于Sphinx
 ===========
@@ -31,15 +31,15 @@ SIG Zephyr与Zephyr Project一样采用了Sphinx来构建文档，生成html静�
 关于reStructuredText语法
 ===============================
 
-依旧维基百科 [#rst_wikipedia]_ 的介绍::
+依据维基百科 [#rst_wikipedia]_ 的介绍::
 
     reStructuredText（RST、ReST或reST）是一种用于文本数据的文件格式，主要用于 Python 编程语言社区的技术文档。
     它是Python Doc-SIG（Documentation Special Interest Group）的Docutils项目的一部分，旨在为Python创建
     一组类似于 Java 的 Javadoc 或 Perl 的 Plain Old Documentation（pod）的工具。Docutils可以从Python程序
     中提取注释和信息，并将它们格式化为各种形式的程序文档
 
-reStructuredText的语法与Markdown十分类似，但更好地支持格式化的撰写专业文档，vscode中也有相应的插件提供辅助。
-reStructuredText的语法无需专门记忆，需要用到时再去查询即可，可以参考 [#rst_tutorial]_ 。
+reStructuredText的语法与Markdown十分类似，但能以更好的结构化的方式撰写专业文档，vscode中也有相应的插件提供辅助。
+reStructuredText的语法无需专门记忆，需要用到时再去查询即可，具体可以参考 [#rst_tutorial]_ 。
 
 如何贡献文档
 ==================
@@ -76,7 +76,7 @@ reStructuredText的语法无需专门记忆，需要用到时再去查询即可�
 
 *  编译文档
 
-   在 :file:`doc/source` 目录下编译文档
+   在 :file:`doc` 目录下编译文档
 
     .. code-block:: bash
 
