@@ -1,0 +1,105 @@
+{
+    "options": {
+        "env": {
+            // 定义你的目标开发板
+            "ZEPHYR_BOARD": "qemu_cortex_a53",
+            // 定义你的应用所在目录
+            "ZEPHYR_APPLICATION": "${workspaceFolder}/../zephyr/samples/subsys/ipc/openamp_qemu_cortexa53",
+        }
+    },
+    "tasks": [
+        // 调用ninja 构建zephyr应用
+        {
+            "type": "shell",
+            "label": "Zephyr 构建",
+            "command": "ninja",
+            "args": [
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        }
+        // 清楚Zephyr的目标文件，如.o, .a等等
+        {
+            "type": "shell",
+            "label": "Zephyr 清除",
+            "command": "ninja",
+            "args": [
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+            ],
+        }
+      // 调用menuconfig 配置Zephyr
+        {
+            "type": "shell",
+            "label": "Zephyr Menuconfig",
+            "command": "ninja",
+            "args": [
+                "menuconfig"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+            ],
+            "detail": "Zephyr menuconfig"
+        }
+        //清楚所有工程文件
+        {
+            "type": "shell",
+            "label": "Zephyr清除所有工程文件",
+            "command": "rm -r *",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+            ],
+        }
+        // Zephyr Cmake Configuration
+        {
+            "type": "shell",
+            "label": "Zephyr 配置",
+            "command": "cmake",
+            // cmake的额外参数在此添加
+            "args": [
+                "-GNinja", // 使用Ninja作为构建后端，Ninja比makefile速度更快
+                "-DBOARD=$ZEPHYR_BOARD",
+                "$ZEPHYR_APPLICATION",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+            ],
+        }
+        // 通过ninja debugserver, 调用qemu开始调试
+        {
+            "type": "shell",
+            "label": "zephyr_debugserver",
+            "command": "ninja",
+            // cmake的额外参数在此添加
+            "args": [
+                "debugserver",
+            ],
+            //必须为true, 否则会阻塞gdb的运行
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+            ],
+        }
+    ],
+    "version": "2.0.0"
+}
