@@ -16,6 +16,7 @@ Zephyr Project中文资料站
 
    introduction/overview.rst
    develop/windows.rst
+   develop/vscode.rst
    develop/write_doc.rst
    develop/driver/flash_introduction.rst
 
