@@ -21,6 +21,7 @@ Zephyr Project中文资料站
    develop/driver/flash_introduction.rst
    develop/subsys/storage/flash_map.rst
    develop/subsys/storage/flash_stream.rst
+   develop/subsys/storage/nvs.rst
 
 
 
