@@ -1,4 +1,4 @@
-.. _develop_driver_flash_introduction:
+.. _driver_flash_introduction:
 
 Zephyr Flash驱动之驱动模型
 ##############################

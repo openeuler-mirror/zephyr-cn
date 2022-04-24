@@ -1,4 +1,4 @@
-.. _develop_subsys_storage_nvs:
+.. _storage_nvs:
 
 Zephyr NVS模块使用说明
 #########################

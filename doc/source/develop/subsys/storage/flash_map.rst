@@ -1,4 +1,4 @@
-.. _develop_subsys_storage_flash_map:
+.. _storage_flash_map:
 
 Zephyr Flash Map实现分析
 #########################
