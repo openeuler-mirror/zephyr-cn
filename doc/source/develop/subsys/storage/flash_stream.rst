@@ -1,4 +1,4 @@
-.. _develop_subsys_storage_flash_stream:
+.. _storage_flash_stream:
 
 Zephyr flash流式操作
 #########################
