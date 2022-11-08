@@ -13,3 +13,4 @@ Zephyr子系统使用方法和实现原理。
    storage/nvs.rst
    storage/nvs_analyze.rst
    logging/logging_usage.rst
+   shell/shell_usage.rst
