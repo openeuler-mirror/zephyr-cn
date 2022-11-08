@@ -1,6 +1,6 @@
 .. _osservices_formated_output_userapi_backend:
 
-Zephyr格式化输出-用户API和后端
+格式化输出-用户API和后端
 ###############################
 
 
