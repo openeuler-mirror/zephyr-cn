@@ -9,3 +9,4 @@
    subsys/index.rst
    driver/index.rst
    osserivces/index.rst
+   kernel/index.rst
