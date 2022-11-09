@@ -10,3 +10,9 @@ Zephyr内核分析和使用方法。
 
    workq.rst
    system_thread.rst
+   synchronization.rst
+   sem.rst
+   mutex.rst
+   poll.rst
+   event.rst
+   condition_variables.rst
