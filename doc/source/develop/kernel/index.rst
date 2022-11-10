@@ -16,3 +16,9 @@ Zephyr内核分析和使用方法。
    poll.rst
    event.rst
    condition_variables.rst
+   data_passing.rst
+   stack.rst
+   fifo_lifo.rst
+   msgq.rst
+   mailbox.rst
+   pipe.rst
