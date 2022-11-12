@@ -20,7 +20,7 @@ Zephyr的代码可以分为Zephyr OS和Zephyr modules两大部分，都托管在
 
     * 只包含Zephyr OS最新发行版和lts发行版，可以访问 `镜像 <https://gitee.com/src-openeuler/zephyr>`_
     * 包含了Zephyr OS和Zephyr modules，可以访问 `网盘 <https://pan.baidu.com/s/1v6wk386WMKZ8X8cXSdfUOQ>`_ 提取码: **zeph**
-    * 如果需要同步Zephyr OS的git仓库，可以先通过 `gitee镜像 <https://gitee.com/zephyr-rtos/zephyr>`_ 同步，然后再同步到github上
+    * 如果需要同步Zephyr OS的git仓库，可以先通过 `gitee zephyr镜像 <https://gitee.com/zephyr-rtos/zephyr>`_ 同步，然后再同步到github上
       的仓库
     * Zephyr modules数量较多，但只有部分git仓库在 `gitee镜像 <https://gitee.com/zephyr-rtos>`_ 上存在，缺失的部分需要通过其方式
       获得。在实际开发过程中，很少会使用到所有Zephyr modules, 因此可以根据需要，只准备相应的modules。
