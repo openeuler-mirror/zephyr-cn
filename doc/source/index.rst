@@ -16,6 +16,7 @@ Zephyr Project中文资料站
 
    introduction/overview.rst
    develop/windows.rst
+   develop/windows_docker.rst
    develop/vscode.rst
    develop/west/index.rst
    develop/write_doc.rst
