@@ -1,0 +1,48 @@
+.
+├── 2024-04-16_Mike-Szczys_Golioth_Build-Before-Installing_slides.pdf
+├── 20240418 From a Weekend Hack to a Future-Proof IoT Device.pdf
+├── Automated, Simulation-Based Flow for Low-Cost FPGA-Accelerated devices with Zephyr on BeagleV-Fire.pdf
+├── battery_charging.pdf
+├── Build Wireless Products Faster with Zephyr and MicroPython - Ryan Erickson.pdf
+├── ceolin-pm-oss-eoss24_zds.pdf
+├── CoAP_eoss24_zds-1.pdf
+├── Configure Zephyr Kconfigs and Devicetree in Simple Words.pdf
+├── Daniel DeGrasse- Clock Management.pdf
+├── eoss2024-llext-tburdick.pdf
+├── eoss24_beefy_ML.pdf
+├── eoss24_journey_to_5uA.pdf
+├── EOSS24_Secure_Connectivity_Edge_Zephyr_T1L.pdf
+├── eoss24_zbus.pdf
+├── filelist.txt
+├── flexboard_eoss_2024.pdf
+├── FutureOfDeviceModelZDS24.pdf
+├── Generating Zephyr Platforms and Apps with Visual System Designer and Renode .pdf
+├── How to integrate my (proprietary) code in Zephyr_IulianaProdan.pdf
+├── insights-security-oss-eoss24_zds.pdf
+├── ITE Gpio Case Study.pdf
+├── Learn OS whlie working in Zephyr (3).pdf
+├── Microservices for Microcontrollers (EOSS_ZDS 2024).pdf
+├── OcppZephyrAsEVSE.pdf
+├── oss_eoss24_zds_aedancullen.pptx.pdf
+├── Practical SBOM Management with Zephyr and SPDX.pdf
+├── Pytest Tests in Twister.pdf
+├── RemoteProcZephyr.pdf
+├── Root Canal Audit of Zephyr.pdf
+├── Taking Your Hardware To Production With Zephyr (EOSS_ZDS 2024).pdf
+├── why_NXP_is_doubling_down_on_Zephyr.pdf
+├── Working with the Community A Timeline for Adding Support for a New Board in Zephyr.pdf
+├── ZDS-2024-Evgenii-Paltsev-pb.pdf
+├── ZDS2024 Generic Tests and Emulators RevB.pdf
+├── ZDS-2024-POSIX-Roadmap-for-Zephyr-LTSv3.pdf
+├── zds-2024-rust-zephyr.pdf
+├── ZDS 2024 - Shell over BLE.pptx.pdf
+├── ZDS 2024 - Zephyr Application Development Using TDD_ Getting Started.pptx.pdf
+├── ZDS_2024_Z_LED_Frame.pdf
+├── ZDS24-IPConfusion.pdf
+├── ZDS24_Userspace.pdf
+├── ZephyrDevSummit_v1.pdf
+├── Zephyr I3C.pdf
+├── Zephyr_Summit_2024_Build_Zephyr_with_Yocto.pdf
+└── Zephyr Summit - Project Ocre.pdf
+
+0 directories, 45 files
